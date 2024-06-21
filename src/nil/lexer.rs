@@ -7,18 +7,22 @@ pub fn tokenizer(input: String) -> Vec<Token> {
     let mut tokens = Vec::new();
 
     let code_re = Regex::new(r"\/\*([\s\S]*?)\*\/").unwrap();   //find /* code */
-   
-     let oneline = &input
-     .replace("\n", "")
-     .replace("\r", "");
-
-    let code = code_re
-    .find_iter(oneline)
+  
+     let filtered = code_re
+    .find_iter(&input)
     .filter_map(|segments| segments.as_str()[2..(segments.len()-2)].parse().ok())
     .collect::<Vec<String>>()
     .join("");
 
-    println!("{:#?}\n\n", code);
+    let mut by_lines: Vec<&str> = filtered.split("\n").collect();
+
+    by_lines.reverse();
+
+    let code = by_lines
+     .join("")
+     .replace("\n", "")
+     .replace("\r", "");
+
     let token_re = Regex::new(concat!(
         r"(?P<ident>\p{Alphabetic}\w*)|",
         r"(?P<number>\d+\.?\d*)|",

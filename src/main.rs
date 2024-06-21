@@ -45,9 +45,10 @@ fn main() {
                         }
 
                         //Start of Processing
-                        let tokens = lexer::tokenizer(content);
-                        println!("{:?}", &tokens);
-                        let tree = parser::parser(tokens, &mut ParserSettings::None);
+                        let mut tokens = lexer::tokenizer(content);
+                        println!("{:?}\n\n", &tokens);
+                        let tree = parser::parser(&mut tokens, &mut ParserSettings::None);
+                        println!("{:?}\n\n", &tree);
                     }
                 }
             }
