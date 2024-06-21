@@ -3,6 +3,8 @@ use std::panic;
 
 mod nil;
 use crate::nil::lexer;
+use crate::nil::parser;
+use parser::ParserSettings;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -44,7 +46,8 @@ fn main() {
 
                         //Start of Processing
                         let tokens = lexer::tokenizer(content);
-                        println!("{:?}", tokens);
+                        println!("{:?}", &tokens);
+                        let tree = parser::parser(tokens, &mut ParserSettings::None);
                     }
                 }
             }

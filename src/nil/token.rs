@@ -5,7 +5,8 @@ pub enum Token {
     ClosingPars,
     OpeningBrac,
     ClosingBrac,
-    Comma,
+    Def,
+    Extern,
     Ident(String),
     Number(f64),
     Operator(String)

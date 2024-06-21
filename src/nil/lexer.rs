@@ -7,15 +7,18 @@ pub fn tokenizer(input: String) -> Vec<Token> {
     let mut tokens = Vec::new();
 
     let code_re = Regex::new(r"\/\*([\s\S]*?)\*\/").unwrap();   //find /* code */
-    
-    let oneline = &input.replace("\n", "").replace("\r", "");
+   
+     let oneline = &input
+     .replace("\n", "")
+     .replace("\r", "");
 
-    let code = code_re.find_iter(oneline)
-        .filter_map(|segments| segments.as_str()[2..(segments.len()-2)].parse().ok())
-        .collect::<Vec<String>>()
-        .join("");
+    let code = code_re
+    .find_iter(oneline)
+    .filter_map(|segments| segments.as_str()[2..(segments.len()-2)].parse().ok())
+    .collect::<Vec<String>>()
+    .join("");
 
-    println!("{:#?}", code);
+    println!("{:#?}\n\n", code);
     let token_re = Regex::new(concat!(
         r"(?P<ident>\p{Alphabetic}\w*)|",
         r"(?P<number>\d+\.?\d*)|",
@@ -29,8 +32,11 @@ pub fn tokenizer(input: String) -> Vec<Token> {
     
     for caputure in token_re.captures_iter(code.as_str()) {
         let token = if caputure.name("ident").is_some() {
-            let name = caputure.name("ident").unwrap();
-            Ident(name.as_str().to_owned())
+            match caputure.name("ident").unwrap().as_str() {
+                "def" => Def,
+                "extern" => Extern,
+                ident => Ident(ident.to_owned())
+            }
         } else if caputure.name("number").is_some() {
             match caputure.name("number").unwrap().as_str().parse() {
             Ok(number) => Number(number),
@@ -41,8 +47,17 @@ pub fn tokenizer(input: String) -> Vec<Token> {
             }
         } else if caputure.name("delimiter").is_some() {
             Delimiter
+        } else if caputure.name("oppar").is_some() {
+            OpeningPars
+        } else if caputure.name("clpar").is_some() {
+            ClosingPars
+        } else if caputure.name("opbar").is_some() {
+            OpeningBrac
+        } else if caputure.name("clbar").is_some() {
+            ClosingBrac
         } else {
-            Delimiter
+            let name = caputure.name("operator").unwrap();
+            Operator(name.as_str().to_owned())
         };
 
         tokens.push(token);
