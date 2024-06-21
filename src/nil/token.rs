@@ -1,3 +1,4 @@
+#[derive(PartialEq, Clone, Debug)]
 pub enum Token {
     Delimiter, //; char
     OpeningPars,

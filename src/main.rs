@@ -43,7 +43,8 @@ fn main() {
                         }
 
                         //Start of Processing
-                        lexer::tokenizer(content);
+                        let tokens = lexer::tokenizer(content);
+                        println!("{:?}", tokens);
                     }
                 }
             }
