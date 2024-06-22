@@ -48,7 +48,7 @@ fn main() {
                         let mut tokens = lexer::tokenizer(content);
                         println!("{:?}\n\n", &tokens);
                         let tree = parser::parser(&mut tokens, &mut ParserSettings::None);
-                        println!("{:?}\n\n", &tree);
+                        println!("{:?}\n\n", &tree.unwrap());
                     }
                 }
             }
