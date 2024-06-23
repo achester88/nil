@@ -35,7 +35,7 @@ fn main() {
                             panic!();
                         }
 
-                        let mut content: String;
+                        let content: String;
                         match std::fs::read_to_string(&path) {
                             Ok(x) => content = x,
                             Err(_e) => {
@@ -47,7 +47,7 @@ fn main() {
                         //Start of Processing
                         let mut tokens = lexer::tokenizer(content);
                         println!("{:?}\n\n", &tokens);
-                        let tree = parser::parser(&mut tokens, &mut ParserSettings::None);
+                        let tree = parser::parser(&mut tokens, &mut ParserSettings::default());
                         println!("{:?}\n\n", &tree.unwrap());
                     }
                 }
