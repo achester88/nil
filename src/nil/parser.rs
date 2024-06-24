@@ -131,6 +131,9 @@ fn parse_prototype(tokens: &mut Vec<Token>, _settings: &mut ParserSettings) -> P
 }
 
 fn parse_primary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> PartParsingResult<Expression> {
+    if &tokens[0] == &Delimiter {
+        tokens.remove(0);
+    }
     match &tokens[0] {
         Ident(name) => {
             //Only variable start with Ident
@@ -141,7 +144,7 @@ fn parse_primary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings) ->
         Number(_) => parse_literal_expr(tokens, settings),
         OpeningBrac => parse_call_expr(tokens, settings),
         OpeningPars => parse_parenthesis_expr(tokens, settings),
-        _ => error("error parsing primary expr")
+        _ => error(format!("error parsing primary expr with token: {:?}", tokens[0]).as_str())
     }
 }
 
@@ -161,6 +164,9 @@ fn parse_call_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettings) -> 
     let mut args = vec![];
 
     loop {
+        if tokens.len() == 0 {
+            break
+        }
         match &tokens[0] {
             Delimiter => break, //Next line(end of args) starts with ';'
             _ => args.push(get_result(parse_expr(tokens, settings, &Vec::new())))

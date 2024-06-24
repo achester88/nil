@@ -6,6 +6,12 @@ use crate::nil::lexer;
 use crate::nil::parser;
 use parser::ParserSettings;
 
+const USAGE: &'static str = "USEAGE:\n nil <path> [(-l | -p | -i)]
+
+Options:
+    -l
+";
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     
@@ -19,7 +25,7 @@ fn main() {
 
     match args.len() {
         1 => {
-            println!("\x1b[91mError\x1b[0m Missing Argument:\n <path>");
+            println!("{}", USAGE);
             panic!();
         }
         _ => {
@@ -38,7 +44,7 @@ fn main() {
             }
 
             match path.as_ref() {
-                "--help" => println!("USEAGE:\n nil <path> [(-l | -p | -i)]"),
+                "--help" => println!("{}", USAGE),
                 _ => {
                     let parts: &Vec<&str> = &path.as_str().split('.').collect();
                     if parts.len() == 1 {
@@ -67,7 +73,7 @@ fn main() {
                         }
                         let tree = parser::parser(&mut tokens, &mut ParserSettings::default());                 
                         if parser_log {
-                            println!("\n{:?}\n", &tree.unwrap());
+                            println!("\n{:#?}\n", &tree.unwrap());
                         }
                     }
                 }

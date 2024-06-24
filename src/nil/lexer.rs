@@ -7,15 +7,16 @@ pub fn tokenizer(input: String) -> Vec<Token> {
     let mut tokens = Vec::new();
 
     let code_re = Regex::new(r"\/\*([\s\S]*?)\*\/").unwrap();   //find /* code */
-  
-     let filtered = code_re
+    let filtered = code_re
     .find_iter(&input)
     .filter_map(|segments| segments.as_str()[2..(segments.len()-2)].parse().ok())
     .collect::<Vec<String>>()
     .join("");
+    
+    println!("{}", filtered);
 
     let mut by_lines: Vec<&str> = filtered.split("\n").collect();
-
+    
     by_lines.reverse();
 
     let code = by_lines
@@ -35,6 +36,7 @@ pub fn tokenizer(input: String) -> Vec<Token> {
     )).unwrap();
     
     for caputure in token_re.captures_iter(code.as_str()) {
+        //println!("{:?}\n", caputure);
         let token = if caputure.name("ident").is_some() {
             match caputure.name("ident").unwrap().as_str() {
                 "def" => Def,
