@@ -8,21 +8,37 @@ use parser::ParserSettings;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    
+    let mut lexer_log = false;
+    let mut parser_log = false;
+    let mut llvmir_log = false;
 
-    panic::set_hook(Box::new(|_info| {
+    /*panic::set_hook(Box::new(|_info| {
         // do nothing
-    }));
+    }));*/
 
     match args.len() {
         1 => {
             println!("\x1b[91mError\x1b[0m Missing Argument:\n <path>");
             panic!();
         }
-        2 => {
+        _ => {
             let path = &args[1];
 
+            for flag in &args[2..] {
+                match flag.as_str() {
+                    "-l" => lexer_log = true,
+                    "-p" => parser_log = true,
+                    "-i" => llvmir_log = true,
+                    _ => {
+                        println!("\x1b[91mError\x1b[0m Unkown Argument Passed: {}", flag);
+                        panic!();
+                    }
+                }
+            }
+
             match path.as_ref() {
-                "--help" => println!("USEAGE:\n nil <path>"),
+                "--help" => println!("USEAGE:\n nil <path> [(-l | -p | -i)]"),
                 _ => {
                     let parts: &Vec<&str> = &path.as_str().split('.').collect();
                     if parts.len() == 1 {
@@ -46,15 +62,16 @@ fn main() {
 
                         //Start of Processing
                         let mut tokens = lexer::tokenizer(content);
-                        println!("{:?}\n\n", &tokens);
-                        let tree = parser::parser(&mut tokens, &mut ParserSettings::default());
-                        println!("{:?}\n\n", &tree.unwrap());
+                        if lexer_log {
+                            println!("\n{:?}\n", &tokens);
+                        }
+                        let tree = parser::parser(&mut tokens, &mut ParserSettings::default());                 
+                        if parser_log {
+                            println!("\n{:?}\n", &tree.unwrap());
+                        }
                     }
                 }
             }
-        }
-        _ => {
-            println!("\x1b[91mError\x1b[0m Unkown Argument Passed");    
         }
     }
 }

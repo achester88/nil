@@ -130,10 +130,6 @@ fn parse_prototype(tokens: &mut Vec<Token>, _settings: &mut ParserSettings) -> P
     })
 }
 
-fn parse_expr(_tokens: &mut Vec<Token>, _settings: &mut ParserSettings, _hold: &Vec<Token>) -> PartParsingResult<Expression> {
-    todo!();
-}
-
 fn parse_primary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> PartParsingResult<Expression> {
     match &tokens[0] {
         Ident(name) => {
@@ -144,7 +140,7 @@ fn parse_primary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings) ->
         },
         Number(_) => parse_literal_expr(tokens, settings),
         OpeningBrac => parse_call_expr(tokens, settings),
-        OpeningParenthesis => parse_parenthesis_expr(tokens, settings),
+        OpeningPars => parse_parenthesis_expr(tokens, settings),
         _ => error("error parsing primary expr")
     }
 }
@@ -174,7 +170,7 @@ fn parse_call_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettings) -> 
     PartParsingResult::Good(CallExpr(name, args))
 }
 
-fn parse_literal_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettings) -> PartParsingResult<Expression> {
+fn parse_literal_expr(tokens : &mut Vec<Token>, _settings : &mut ParserSettings) -> PartParsingResult<Expression> {
     match tokens.remove(0) {
         Number(val) => PartParsingResult::Good(LiteralExpr(val)),
         _ => error("literal expected")
@@ -190,4 +186,52 @@ fn parse_parenthesis_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettin
     }
 
     PartParsingResult::Good(get_result(expr))
+}
+
+fn parse_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings, _hold: &Vec<Token>) -> PartParsingResult<Expression> {
+    let lhs = parse_primary_expr(tokens, settings);
+    let expr = parse_binary_expr(tokens, settings, 0, &get_result(lhs));
+
+    PartParsingResult::Good(get_result(expr))
+}
+
+fn parse_binary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings, expr_precednce: i32, lhs: &Expression) -> PartParsingResult<Expression> {
+    let mut result = lhs.clone();
+
+    loop {
+        
+        let (operator, precednce) = match &tokens.first() {
+            Some(&Operator(ref op)) => {
+                match settings.operator_precednece.get(op) { //checks hashmap for op
+                    Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),
+                    None => return error(&format!("unkonwn operator: {}", op)),
+                    _ => break,
+                }
+            },
+            _ => break
+        };
+        tokens.remove(0);
+    
+        let mut rhs = parse_primary_expr(tokens, settings);
+
+        loop {
+            let binary_rhs = match &tokens.first() {
+                Some(&Operator(ref op)) => {
+                    match settings.operator_precednece.get(op) {
+                        Some(pr) if *pr > precednce => parse_binary_expr(tokens, settings, *pr, &get_result(rhs)),
+                        None => return error(&format!("unkonwn operator: {}", op)),
+                        _ => break
+                    }
+                },
+                _ => break
+            };
+
+            rhs = binary_rhs;
+        }
+
+        result = BinaryExpr(operator, Box::new(result), Box::new(get_result(rhs)));
+
+    }
+
+    PartParsingResult::Good(result)
 }
