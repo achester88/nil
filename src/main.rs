@@ -6,6 +6,7 @@ use crate::nil::lexer;
 use crate::nil::parser;
 use crate::nil::evaluate;
 use parser::ParserSettings;
+use crate::nil::errorhandler;
 
 const USAGE: &'static str = "USEAGE:\n nil <path> [(-l | -p | -i)]
 
@@ -67,7 +68,10 @@ fn main() {
                         }
 
                         //Start of Processing
-                        let mut tokens = lexer::tokenizer(content);
+                        let err_hand = errorhandler::ErrorHandler::new(content.clone());
+                        
+                        let mut tokens = lexer::tokenizer(content).unwrap_or_else(|err| err_hand.throw_err(err));
+                        
                         if lexer_log {
                             println!("\n{:?}\n", &tokens);
                         }
@@ -77,6 +81,7 @@ fn main() {
                         }
 
                         evaluate::eval_ast(tree);
+                        
                     }
                 }
             }
