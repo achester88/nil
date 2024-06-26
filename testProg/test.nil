@@ -1,8 +1,10 @@
+Defines a square function, call it and outputs the results
 /*
-(5 + 5)
-*/
 
-) {x y} add
-;y + x
+;{output} {sq} 5
+
+) {x} sq
+;x * x
 def (
 
+*/

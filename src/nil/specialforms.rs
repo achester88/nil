@@ -16,6 +16,8 @@ impl SpecialForms {
         temp.insert(String::from("*"), mul);
         temp.insert(String::from("/"), div);
 
+        temp.insert(String::from("output"), output);
+
         SpecialForms {map: temp}
     }
 }
@@ -39,4 +41,17 @@ fn div(args: Vec<f64>) -> Result<f64, String> {
         return Err(String::from("Div by zero"));
     }
     Ok(args[0] / args[1])
+}
+
+fn output(args: Vec<f64>) -> Result<f64, String> {
+    let mut out: Vec<char> = vec![];
+
+    for i in 0..args.len() {
+        let str_val = args[i].to_string();
+        out.append(&mut str_val.chars().collect());
+        out.push(' ');
+    }
+
+    println!("{}", out.into_iter().collect::<String>());
+    Ok(1.0)
 }

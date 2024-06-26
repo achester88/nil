@@ -2,9 +2,10 @@ use std::collections::HashMap;
 
 use crate::nil::grammar::{Expression, Prototype, Function};
 
+#[derive(Clone)]
 pub struct Scope {
     pub var: HashMap<String, f64>,
-    funs: HashMap<String, Function>//fn prot body
+    pub funs: HashMap<String, Function>//fn prot body
 }
 
 impl Scope {

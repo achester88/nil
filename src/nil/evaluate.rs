@@ -18,8 +18,9 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> f64 {
                 if fun.prototype.name == "" {
                     println!("run");
                     
-                    eval_expression(&sp, fun.body);
+                    return eval_expression(&sp, scope, fun.body);
                 } else { //Named protype add to scope
+                    scope.funs.insert(fun.prototype.name.clone(), fun);
                 }
             },
             ASTNode::ExternNode(prot) => {}
@@ -28,42 +29,61 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> f64 {
     return -1.0;
 }
 //eval args fn?
-fn eval_expression(sp: &SpecialForms, expr: Expression) -> f64 {
+fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> f64 {
     match expr {
         LiteralExpr(val) => val,
         VariableExpr(name) => {
-           -1.0 
+            match scope.var.get(&name) {
+                Some(val) => *val,
+                None => error(format!("Undefined Varable: {}", name))
+            } 
         },
-        BinaryExpr(op, expr1, expr2) => {
-            run(sp, op, vec!(eval_expression(&sp, *expr1), eval_expression(&sp, *expr2)))
+        BinaryExpr(op, expr1, expr2) => {//split Binary Ops and built in fn?
+            let lhs = eval_expression(&sp, scope, *expr1);
+            let rhs = eval_expression(&sp, scope, *expr2);
+            run(sp, scope, op, vec!(lhs, rhs))
         },
-        CallExpr(name, args) => -1.0 //check specialforms then scope
+        CallExpr(name, args) => {
+            let args_vals = args.into_iter().map(|expr| eval_expression(&sp, scope, expr)).collect();
+            run(sp, scope, name, args_vals)
+        } 
     }
 }
 
-fn run(sp: &SpecialForms, fn_name: String, args: Vec<f64>) -> f64 {
+fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<f64>) -> f64 {
     println!("name: {}, args: {:?}", fn_name, args);
 
     match sp.map.get(&fn_name) {
         Some(fun) => {
             match fun(args) {
                 Ok(val) => val,
-                Err(mes) => {error(mes)}
+                Err(mes) => error(mes)
             }
         },
-        None => {-1.0}//check scope
-    }
-    
-    /*if sp.map.contains_key(&*fn_name) {
-        match self.special_forms.get(&fn_name)(args) {
-            Ok(val) => return val,
-            Err(mes) => {
-                println!("\x1b[91mError\x1b[0m \n {}", mes);
-                panic!();
+        None => {
+            match scope.funs.get(&fn_name) {
+                Some(fun) => {
+                    println!("Found: {:?}", fun);
+                    //extend scope
+                    let mut temp_scope = scope.clone(); //find a better slouition
+                    for i in 0..args.len() { //check args count matches
+                        temp_scope.var.insert(fun.prototype.args[i].to_string(), args[i]);
+                    }
+                    //eval
+                    eval(
+                        ASTNode::FunctionNode(Function {
+                            prototype: Prototype {name: String::from(""), 
+                            args: vec![]}, body: fun.body.clone()
+                        }),
+                        &sp,
+                        &mut temp_scope
+                    )
+                },
+                None => error(format!("Undefined Function: {}", fn_name))
             }
         }
-    }*/
-    //-1.0
+    }
+
 }
 
 fn error(mes: String) -> ! {
