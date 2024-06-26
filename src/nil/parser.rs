@@ -19,10 +19,11 @@ pub struct ParserSettings {
 impl ParserSettings {
     pub fn default() -> Self {
         let mut op_prec = HashMap::new();
-        op_prec.insert("<".to_string(), 10);
+        //op_prec.insert("<".to_string(), 10);
         op_prec.insert("+".to_string(), 20);
         op_prec.insert("-".to_string(), 20);
         op_prec.insert("*".to_string(), 40);
+        op_prec.insert("/".to_string(), 40);
         ParserSettings{operator_precednece: op_prec}
     }
 }
@@ -63,7 +64,7 @@ pub fn parser(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> Result<
             },
             _ => parse_expression(tokens, &hold, settings)
         };
-        
+
         ast.push(get_result(result));
 
         if tokens.len() == 0 {
