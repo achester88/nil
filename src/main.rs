@@ -4,12 +4,14 @@ use std::panic;
 mod nil;
 use crate::nil::lexer;
 use crate::nil::parser;
+use crate::nil::evaluate;
 use parser::ParserSettings;
 
 const USAGE: &'static str = "USEAGE:\n nil <path> [(-l | -p | -i)]
 
 Options:
-    -l
+    -l Display Lexer Output
+    -p Display Parser Output
 ";
 
 fn main() {
@@ -17,7 +19,6 @@ fn main() {
     
     let mut lexer_log = false;
     let mut parser_log = false;
-    let mut llvmir_log = false;
 
     /*panic::set_hook(Box::new(|_info| {
         // do nothing
@@ -35,7 +36,6 @@ fn main() {
                 match flag.as_str() {
                     "-l" => lexer_log = true,
                     "-p" => parser_log = true,
-                    "-i" => llvmir_log = true,
                     _ => {
                         println!("\x1b[91mError\x1b[0m Unkown Argument Passed: {}", flag);
                         panic!();
@@ -71,10 +71,12 @@ fn main() {
                         if lexer_log {
                             println!("\n{:?}\n", &tokens);
                         }
-                        let tree = parser::parser(&mut tokens, &mut ParserSettings::default());                 
+                        let tree = parser::parser(&mut tokens, &mut ParserSettings::default()).unwrap();                 
                         if parser_log {
-                            println!("\n{:#?}\n", &tree.unwrap());
+                            println!("\n{:#?}\n", &tree);
                         }
+
+                        evaluate::eval_ast(tree);
                     }
                 }
             }

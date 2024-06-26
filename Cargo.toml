@@ -5,8 +5,4 @@ edition = "2021"
 authors = ["Anthony Chester <anthonychester71@gmail.com>"]
 
 [dependencies]
-llvm-sys = "*"
 regex = "*"
-
-[dependencies.iron_llvm]
-git = "https://github.com/jauhien/iron-llvm.git"
