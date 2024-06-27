@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::nil::token::Token;
+use crate::nil::token::{Token, TokenVal};
 use crate::nil::grammar;
-use Token::*;
+use TokenVal::*;
 use grammar::*;
 use ASTNode::*;
 use Expression::*;
@@ -52,9 +52,12 @@ pub fn parser(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> Result<
     let mut hold: Vec<Token> = vec![]; //keeps tokens of the current line
 
     loop { 
-        let cur_token = &tokens[0];
+        let cur_token = match tokens.first() {
+            Some(tk) => tk,
+            None => {return Err(Error {})}//Fix with proper error
+        };
 
-        let result = match cur_token {
+        let result = match cur_token.value {
             Def => parse_function(tokens, settings),
             Extern => parse_extern(tokens, settings),
             Delimiter => {
@@ -104,7 +107,7 @@ fn parse_expression(tokens: &mut Vec<Token>, hold: &Vec<Token>, settings: &mut P
 
 fn parse_prototype(tokens: &mut Vec<Token>, _settings: &mut ParserSettings) -> PartParsingResult<Prototype> {
     //Find '{'
-    if tokens.remove(0) != OpeningBrac {
+    if tokens.remove(0).value != OpeningBrac {
         return error("expected '{' in function prototype");
     }
     //collect args
@@ -112,7 +115,7 @@ fn parse_prototype(tokens: &mut Vec<Token>, _settings: &mut ParserSettings) -> P
     let mut args = vec![];
 
     loop {
-        match tokens.remove(0) {
+        match tokens.remove(0).value {
             Ident(arg) => args.push(arg),
             ClosingBrac => break,
             _ => return error("expected '}' in function prototype")
@@ -120,7 +123,7 @@ fn parse_prototype(tokens: &mut Vec<Token>, _settings: &mut ParserSettings) -> P
     }
     //Collect fn Name
     let name: String;
-    match tokens.remove(0) {
+    match tokens.remove(0).value {
         Ident(val) => name = val,
         _ => return error("expected function name in prototype")
     }
@@ -132,10 +135,10 @@ fn parse_prototype(tokens: &mut Vec<Token>, _settings: &mut ParserSettings) -> P
 }
 
 fn parse_primary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> PartParsingResult<Expression> {
-    if &tokens[0] == &Delimiter {
+    if &tokens[0].value == &Delimiter {
         tokens.remove(0);
     }
-    match &tokens[0] {
+    match &tokens[0].value {
         Ident(name) => {
             //Only variable start with Ident
             let id_name = name.to_owned();
@@ -153,12 +156,12 @@ fn parse_call_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettings) -> 
     tokens.remove(0);//removes OpeningBrac
     
     let name: String;
-    match tokens.remove(0) {
+    match tokens.remove(0).value {
         Ident(val) => name = val,
         _ => return error("expected function name in prototype")
     }
 
-    if tokens.remove(0) != ClosingBrac {
+    if tokens.remove(0).value != ClosingBrac {
         return error("expected function name in prototype")
     }
 
@@ -168,7 +171,7 @@ fn parse_call_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettings) -> 
         if tokens.len() == 0 {
             break
         }
-        match &tokens[0] {
+        match &tokens[0].value {
             Delimiter => break, //Next line(end of args) starts with ';'
             _ => args.push(get_result(parse_expr(tokens, settings, &Vec::new())))
         }
@@ -178,7 +181,7 @@ fn parse_call_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettings) -> 
 }
 
 fn parse_literal_expr(tokens : &mut Vec<Token>, _settings : &mut ParserSettings) -> PartParsingResult<Expression> {
-    match tokens.remove(0) {
+    match tokens.remove(0).value {
         Number(val) => PartParsingResult::Good(LiteralExpr(val)),
         _ => error("literal expected")
     }
@@ -188,7 +191,7 @@ fn parse_parenthesis_expr(tokens : &mut Vec<Token>, settings : &mut ParserSettin
     tokens.remove(0); //removes '('
     let expr = parse_expr(tokens, settings, &Vec::new());
 
-    if tokens.remove(0) != ClosingPars {
+    if tokens.remove(0).value != ClosingPars {
         return error("expected ')'")
     }
 
@@ -206,9 +209,11 @@ fn parse_binary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings, exp
     let mut result = lhs.clone();
 
     loop {
-        
-        let (operator, precednce) = match &tokens.first() {
-            Some(&Operator(ref op)) => {
+        if tokens.len() == 0 {
+            break
+        }
+        let (operator, precednce) = match &tokens[0].value {
+            &Operator(ref op) => {
                 match settings.operator_precednece.get(op) { //checks hashmap for op
                     Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),
                     None => return error(&format!("unkonwn operator: {}", op)),
@@ -222,8 +227,11 @@ fn parse_binary_expr(tokens: &mut Vec<Token>, settings: &mut ParserSettings, exp
         let mut rhs = parse_primary_expr(tokens, settings);
 
         loop {
-            let binary_rhs = match &tokens.first() {
-                Some(&Operator(ref op)) => {
+            if tokens.len() == 0 {
+                break
+            }
+            let binary_rhs = match &tokens[0].value {
+                &Operator(ref op) => {
                     match settings.operator_precednece.get(op) {
                         Some(pr) if *pr > precednce => parse_binary_expr(tokens, settings, *pr, &get_result(rhs)),
                         None => return error(&format!("unkonwn operator: {}", op)),

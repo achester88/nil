@@ -1,57 +1,57 @@
 use regex::Regex;
 
-use crate::nil::token::Token;
+use crate::nil::token::{Token, TokenVal};
 use crate::nil::errorhandler::Error;
-use Token::*;
+use TokenVal::*;
 
 pub fn tokenizer(input: String) -> Result<Vec<Token>, Error> {
 
     //return Err(Error::desc("test error", "This error was written as a test of NIL's debuging ablity"));
 
-    let mut tokens = vec![];
-    let segments: Vec<(Vec<&str>, Vec<u32>)> = vec![];
-
-    let code_re = Regex::new(r"\/\*([\s\S]*?)\*\/").unwrap();   //find /* code */
-    /*let filtered = code_re
-    .find_iter(&input)//get line num from rexgex match 
-    .filter_map(|segments| segments.as_str()[2..(segments.len()-2)].parse().ok())
-    .collect::<Vec<String>>()
-    .join("");
-    */
-
-    for caputure in code_re.captures_iter(&input) {
-        //Here we go
-        println!("{:#?}", caputure);
-    }
-
+    let mut tokens = vec![];    
     
-    println!("{:?}", segments);
-    //
-    return Err(Error::test());
-
-    /*
-    let mut by_lines: Vec<&str> = filtered.split("\n").collect();
+    let mut by_lines: Vec<&str> = input.split("\n").collect();
     
     by_lines.reverse();
-
-    let code = by_lines
-     .join("")
-     .replace("\n", "")
-     .replace("\r", ""); 
     
     let mut l = by_lines.len();
-    
-//Go line by line check for /* and */ and if in some use tokenize line
+    let mut in_segment = false; 
     
    for line in by_lines {
-       tokens.append(&mut tokenize_line(line));
-       l += 1;
+       println!("-------- start {} -----------", l);
+       let mut ended = false;
+       let start = match line.find("/*") {
+           Some(i) => {
+               println!("start: {}", i);
+               in_segment = false;
+               ended = true;
+               i+2
+           },
+           None => 0
+       };
+ 
+       let end = match line.find("*/") {
+           Some(i) => {
+               println!("end: {}", i);
+               in_segment = true;
+               i
+           },
+           None => line.len()
+       };
+
+       //tokens.append(&mut tokenize_line(line));
+       if in_segment || ended {
+        println!("{}: {:?}", l, line[start..end].to_string());
+        tokens.append(&mut tokenize_line(&line[start..end], l));
+       }
+       println!("-------- end {} -----------", l);
+       l -= 1;
    } 
-    */
+
     Ok(tokens)
 }
 
-fn tokenize_line(line: &str) -> Vec<Token> {
+fn tokenize_line(line: &str, line_num: usize) -> Vec<Token> {
     let token_re = Regex::new(concat!(
         r"(?P<ident>\p{Alphabetic}\w*)|",
         r"(?P<number>\d+\.?\d*)|",
@@ -66,6 +66,7 @@ fn tokenize_line(line: &str) -> Vec<Token> {
     let mut temp: Vec<Token> = vec![];
 
     for caputure in token_re.captures_iter(line) {
+        let c = 0; //get pos of token from caputure
         let token = if caputure.name("ident").is_some() {
                 match caputure.name("ident").unwrap().as_str() {
                     "def" => Def,
@@ -95,7 +96,7 @@ fn tokenize_line(line: &str) -> Vec<Token> {
                 Operator(name.as_str().to_owned())
             };
 
-        temp.push(token);
+        temp.push(Token {value: token, pos: (line_num, c)});
 
     }
 

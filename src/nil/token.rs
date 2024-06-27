@@ -1,5 +1,11 @@
+#[derive(Debug)]
+pub struct Token {
+    pub value: TokenVal,
+    pub pos: (usize, usize)
+}
+
 #[derive(PartialEq, Clone, Debug)]
-pub enum Token {
+pub enum TokenVal {
     Delimiter, //; char
     OpeningPars,
     ClosingPars,
