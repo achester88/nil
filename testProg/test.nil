@@ -1,10 +1,8 @@
 Defines a square function, call it and outputs the results
 
 /*
-;{output} {sq} 5
-
-) {x} sq 
-;x * x
-def (
+)
+;{output} 5
+nif 5 == 5 (
 
 */

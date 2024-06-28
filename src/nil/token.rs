@@ -5,6 +5,11 @@ pub struct Token {
 }
 
 #[derive(PartialEq, Clone, Debug)]
+pub enum TypeOf {
+    Num    
+}
+
+#[derive(PartialEq, Clone, Debug)]
 pub enum TokenVal {
     Delimiter, //; char
     OpeningPars,
@@ -13,7 +18,11 @@ pub enum TokenVal {
     ClosingBrac,
     Def,
     Extern,
+    NIf,
+    NElse,
+    Assignment,
     Ident(String),
     Number(f64),
-    Operator(String)
+    Operator(String),
+    Type(TypeOf)
 }

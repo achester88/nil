@@ -43,6 +43,7 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> f6
             let rhs = eval_expression(&sp, scope, *expr2);
             run(sp, scope, op, vec!(lhs, rhs))
         },
+        ConditionalExpr => {-1.0},
         CallExpr(name, args) => {
             let args_vals = args.into_iter().map(|expr| eval_expression(&sp, scope, expr)).collect();
             run(sp, scope, name, args_vals)

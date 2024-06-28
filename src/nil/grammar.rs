@@ -21,5 +21,7 @@ pub enum Expression {
     LiteralExpr(f64),
     VariableExpr(String),
     BinaryExpr(String, Box<Expression>, Box<Expression>),
+    //cond, then, else
+    ConditionalExpr{cond_expr: Box<Expression>, then_expr: Box<Expression>, else_expr: Box<Expression>},
     CallExpr(String, Vec<Expression>)
 }

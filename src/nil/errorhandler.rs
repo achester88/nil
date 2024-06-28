@@ -27,6 +27,10 @@ impl Error {
 
     pub fn at_mes(mes: &str, desc: &str, pos: (usize, usize)) -> Self {
         Error {message: mes.to_string(), desc: Some(desc.to_string()), pos: Some(pos), point: false}
+    }
+
+    pub fn at_mes_pt(mes: &str, desc: &str, pos: (usize, usize)) -> Self {
+        Error {message: mes.to_string(), desc: Some(desc.to_string()), pos: Some(pos), point: true}
     } 
 
     pub fn test() -> Self {
