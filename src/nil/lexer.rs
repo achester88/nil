@@ -73,7 +73,7 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
                 match caputure.name("number").unwrap().as_str().parse() {
                     Ok(number) => Number(number),
                     Err(_) => {
-                        return Err(Error::at("Number Format Unrecognized", &format!("Number starting at {}:{} was not able to be parsed", line_num, c), (line_num, c)))
+                        return Err(Error::at_mes("Number Format Unrecognized", &format!("Number starting at {}:{} was not able to be parsed", line_num, c), (line_num, c)))
                         //println!("\x1b[91mError\x1b[0m Number Format Unrecognized");
                         //panic!()
                     }

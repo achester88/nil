@@ -68,7 +68,7 @@ fn main() {
                         }
 
                         //Start of Processing
-                        let err_hand = errorhandler::ErrorHandler::new(content.clone());
+                        let err_hand = errorhandler::ErrorHandler::new(content.clone(), path.to_string());
                         
                         let mut tokens = lexer::tokenizer(content).unwrap_or_else(|err| err_hand.throw_err(err));
                         

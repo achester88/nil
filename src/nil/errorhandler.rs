@@ -17,9 +17,17 @@ impl Error {
         Error {message: mes.to_string(), desc: Some(desc.to_string()), pos: None, point: false}
     }
 
-    pub fn at(mes: &str, desc: &str, pos: (usize, usize)) -> Self {
-        Error {message: mes.to_string(), desc: Some(desc.to_string()), pos: Some(pos), point: false}
+    pub fn at(mes: &str, pos: (usize, usize)) -> Self {
+        Error {message: mes.to_string(), desc: None, pos: Some(pos), point: false}
     }
+
+    pub fn at_pt(mes: &str, pos: (usize, usize)) -> Self {
+        Error {message: mes.to_string(), desc: None, pos: Some(pos), point: true}
+    }
+
+    pub fn at_mes(mes: &str, desc: &str, pos: (usize, usize)) -> Self {
+        Error {message: mes.to_string(), desc: Some(desc.to_string()), pos: Some(pos), point: false}
+    } 
 
     pub fn test() -> Self {
         Error::desc("test error", "This error was written as a test of NIL's debuging ablity")
@@ -27,18 +35,24 @@ impl Error {
 }
 
 pub struct ErrorHandler {
-    source: Vec<String>
+    source: Vec<String>,
+    file: String
 }
 
 impl ErrorHandler {
     
-    pub fn new(source: String) -> Self {
+    pub fn new(source: String, file: String) -> Self {
         let by_lines = source.split("\n").map(|x| x.to_string()).collect();
-        ErrorHandler {source: by_lines}
+        ErrorHandler {source: by_lines, file: file}
     }
 
     pub fn throw_err(&self, err: Error) -> ! {
-        println!("\x1b[91mError\x1b[0m: {}", err.message);
+        print!("\x1b[91mError\x1b[0m: {}", err.message);
+        if err.pos.is_some() {
+            let (l, c) = err.pos.unwrap();
+            print!(" at {}:{}:{}", self.file, l, c);
+        }
+        println!("");
 
         if err.desc.is_some() {
             println!("  {}", err.desc.unwrap());
