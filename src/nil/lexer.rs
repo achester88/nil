@@ -6,8 +6,6 @@ use TokenVal::*;
 
 pub fn tokenizer(input: String) -> Result<Vec<Token>, Error> {
 
-    //return Err(Error::desc("test error", "This error was written as a test of NIL's debuging ablity"));
-
     let mut tokens = vec![];    
     
     let mut by_lines: Vec<&str> = input.split("\n").collect();
@@ -18,11 +16,9 @@ pub fn tokenizer(input: String) -> Result<Vec<Token>, Error> {
     let mut in_segment = false; 
     
    for line in by_lines {
-       println!("-------- start {} -----------", l);
        let mut ended = false;
        let start = match line.find("/*") {
            Some(i) => {
-               println!("start: {}", i);
                in_segment = false;
                ended = true;
                i+2
@@ -32,26 +28,25 @@ pub fn tokenizer(input: String) -> Result<Vec<Token>, Error> {
  
        let end = match line.find("*/") {
            Some(i) => {
-               println!("end: {}", i);
                in_segment = true;
                i
            },
            None => line.len()
        };
 
-       //tokens.append(&mut tokenize_line(line));
        if in_segment || ended {
-        println!("{}: {:?}", l, line[start..end].to_string());
-        tokens.append(&mut tokenize_line(&line[start..end], l));
+           match &mut tokenize_line(&line[start..end], l) {
+               Ok(new) => tokens.append(new),
+               Err(err) => {return Err(err.to_owned());}
+           }
        }
-       println!("-------- end {} -----------", l);
        l -= 1;
    } 
 
     Ok(tokens)
 }
 
-fn tokenize_line(line: &str, line_num: usize) -> Vec<Token> {
+fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
     let token_re = Regex::new(concat!(
         r"(?P<ident>\p{Alphabetic}\w*)|",
         r"(?P<number>\d+\.?\d*)|",
@@ -66,7 +61,8 @@ fn tokenize_line(line: &str, line_num: usize) -> Vec<Token> {
     let mut temp: Vec<Token> = vec![];
 
     for caputure in token_re.captures_iter(line) {
-        let c = 0; //get pos of token from caputure
+        let c =  caputure.get(0).unwrap().start();
+
         let token = if caputure.name("ident").is_some() {
                 match caputure.name("ident").unwrap().as_str() {
                     "def" => Def,
@@ -77,8 +73,9 @@ fn tokenize_line(line: &str, line_num: usize) -> Vec<Token> {
                 match caputure.name("number").unwrap().as_str().parse() {
                     Ok(number) => Number(number),
                     Err(_) => {
-                        println!("\x1b[91mError\x1b[0m Number Format Unrecognized");
-                        panic!()
+                        return Err(Error::at("Number Format Unrecognized", &format!("Number starting at {}:{} was not able to be parsed", line_num, c), (line_num, c)))
+                        //println!("\x1b[91mError\x1b[0m Number Format Unrecognized");
+                        //panic!()
                     }
                 }
             } else if caputure.name("delimiter").is_some() {
@@ -100,5 +97,5 @@ fn tokenize_line(line: &str, line_num: usize) -> Vec<Token> {
 
     }
 
-    return temp;
+    Ok(temp)
 }

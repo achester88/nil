@@ -2,15 +2,11 @@ use std::collections::HashMap;
 
 use crate::nil::token::{Token, TokenVal};
 use crate::nil::grammar;
+use crate::nil::errorhandler::Error;
 use TokenVal::*;
 use grammar::*;
 use ASTNode::*;
 use Expression::*;
-
-#[derive(Debug)]
-pub struct Error {
-
-}
 
 pub struct ParserSettings {
     operator_precednece: HashMap<String, i32>
@@ -28,34 +24,16 @@ impl ParserSettings {
     }
 }
 
-enum PartParsingResult<T> {
-    Good(T),
-    Bad(String)
-}
-
-fn error<T>(message: &str) -> PartParsingResult<T> {
-    PartParsingResult::Bad(message.to_string())
-}
-
-fn get_result<T>(ppresult: PartParsingResult<T>) -> T {
-    match ppresult {
-        PartParsingResult::Good(value) => value,
-        PartParsingResult::Bad(mes) => {
-            println!("\x1b[91mError\x1b[0m \n {}", mes);
-            panic!();
-        }
-    }
-}
-
 pub fn parser(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> Result<Vec<ASTNode>, Error> {
     let mut ast: Vec<ASTNode> = vec![];
     let mut hold: Vec<Token> = vec![]; //keeps tokens of the current line
 
     loop { 
-        let cur_token = match tokens.first() {
-            Some(tk) => tk,
-            None => {return Err(Error {})}//Fix with proper error
-        };
+        if tokens.len() == 0 {
+            break
+        }
+
+        let cur_token = &tokens[0];
 
         let result = match cur_token.value {
             Def => parse_function(tokens, settings),
@@ -68,8 +46,8 @@ pub fn parser(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> Result<
             _ => parse_expression(tokens, &hold, settings)
         };
 
-        ast.push(get_result(result));
-
+        ast.push(get_result(result)); 
+        
         if tokens.len() == 0 {
             break
         }
@@ -81,13 +59,13 @@ pub fn parser(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> Result<
     Ok(ast)
 }
 
-fn parse_function(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> PartParsingResult<ASTNode> {
+fn parse_function(tokens: &mut Vec<Token>, settings: &mut ParserSettings) -> Result<ASTNode, Error> {
     tokens.remove(0); //Removes Def
     let body = parse_expr(tokens, settings, &Vec::new());
     let prototype = parse_prototype(tokens, settings);
     PartParsingResult::Good(FunctionNode(Function{
-        prototype: get_result(prototype),
-        body: get_result(body)
+        prototype: prototype.unwrap_or_else(|err| return err),
+        body: (body).unwrap_or_else(|err| return err)
     }))
 }
 

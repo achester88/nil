@@ -75,7 +75,8 @@ fn main() {
                         if lexer_log {
                             println!("\n{:?}\n", &tokens);
                         }
-                        let tree = parser::parser(&mut tokens, &mut ParserSettings::default()).unwrap();                 
+                        let tree = parser::parser(&mut tokens, &mut ParserSettings::default()).unwrap_or_else(|err| err_hand.throw_err(err));
+
                         if parser_log {
                             println!("\n{:#?}\n", &tree);
                         }
