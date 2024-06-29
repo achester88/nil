@@ -1,13 +1,12 @@
 use std::process;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Error {
     message: String,
     desc: Option<String>,
     pos: Option<(usize, usize)>,
     point: bool,
 }
-
 impl Error {
     pub fn mes(mes: &str) -> Self {
         Error {message: mes.to_string(), desc: None, pos: None, point: false}

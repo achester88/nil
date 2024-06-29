@@ -26,7 +26,6 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> Value {
     match node {
             ASTNode::FunctionNode(fun) => {
                 if fun.prototype.name == "" {
-                    println!("run");
                     
                     return match eval_expression(&sp, scope, fun.body) {
                         Ok(val) => val,
@@ -45,6 +44,12 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> Value {
 fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Result<Value, String> {
     match expr {
         LiteralExpr(val) => Ok(val),
+        AssignmentExpr(name, expr) => {
+            let set = get_result!(eval_expression(sp, scope, *expr));
+            scope.var.insert(name, set);
+            
+            Ok(Value::Bool(true))
+        },
         VariableExpr(name) => {
             match scope.var.get(&name) {
                 Some(val) => Ok(val.clone()), //deref
@@ -61,7 +66,7 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
                 eval_expression(sp, scope, *then)
             } else {
                 // if else eval_expression
-                println!("else");
+                //println!("else");
                 match else_ep {
                     Some(expr) => eval_expression(sp, scope, *expr),
                     None => Ok(Value::Bool(false))
@@ -93,7 +98,7 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
 }
 
 fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) -> Value {
-    println!("name: {}, args: {:?}", fn_name, args);
+    //println!("name: {}, args: {:?}", fn_name, args);
 
     match sp.map.get(&fn_name) {
         Some(fun) => {
@@ -105,7 +110,7 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
         None => {
             match scope.funs.get(&fn_name) {
                 Some(fun) => {
-                    println!("Found: {:?}", fun);
+                    //println!("Found: {:?}", fun);
                     //extend scope
                     let mut temp_scope = scope.clone(); //find a better slouition
                     for i in 0..args.len() { //check args count matches

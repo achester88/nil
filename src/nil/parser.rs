@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::nil::errorhandler::Error;
 use crate::nil::grammar;
-use crate::nil::token::{Token, TokenVal};
+use crate::nil::token::{Token, TokenVal, TypeOf};
 use grammar::*;
 use ASTNode::*;
 use Expression::*;
@@ -36,6 +36,7 @@ impl ParserSettings {
         op_prec.insert(">=".to_string(), 15);
         op_prec.insert("<".to_string(), 15);
         op_prec.insert("<=".to_string(), 15);
+        
         ParserSettings {
             operator_precednece: op_prec,
         }
@@ -68,7 +69,7 @@ pub fn parser(
                 tokens.remove(0);
                 continue;
             }
-            _ => parse_expression(tokens, &hold, settings),
+            _ => {parse_expression(tokens, &hold, settings)},
         };
 
         ast.push(get_result!(result));
@@ -352,12 +353,35 @@ fn parse_parenthesis_expr(
 fn parse_expr(
     tokens: &mut Vec<Token>,
     settings: &mut ParserSettings,
-    _hold: &Vec<Token>,
+    hold: &Vec<Token>,
 ) -> Result<Expression, Error> {
     let lhs = parse_primary_expr(tokens, settings);
-    let expr = parse_binary_expr(tokens, settings, 0, &(get_result!(lhs)));
 
-    Ok(get_result!(expr))
+    if(tokens.len() != 0) {
+    match &tokens[0].value {
+        Type(type_of) => {
+            if let VariableExpr(name) = get_result!(lhs) {
+                match type_of {
+                    TypeOf::Num => return Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Num(0.0))))),
+                    TypeOf::String => return Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::String(String::from("")))))),
+                    TypeOf::Bool => return Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Bool(false))))),
+                    }
+            } else {
+                return error("Error parsing Variable Init")
+            }
+            
+            
+        },
+        _ => {}
+    };
+    }
+            let expr = parse_binary_expr(tokens, settings, 0, &(get_result!(lhs)));
+            Ok(get_result!(expr))
+        
+        //check if next is type if so create var
+    //let expr = parse_binary_expr(tokens, settings, 0, &(get_result!(lhs)));
+
+    //Ok(get_result!(expr))
 }
 
 fn parse_binary_expr(
@@ -366,7 +390,6 @@ fn parse_binary_expr(
     expr_precednce: i32,
     lhs: &Expression,
 ) -> Result<Expression, Error> {
-    println!("######## {:?}", &tokens);
     let mut result = lhs.clone();
 
     loop {
@@ -408,6 +431,17 @@ fn parse_binary_expr(
                     None => return error(&format!("unkonwn operator: {}", op)),
                     _ => break,
                 },
+                &Assignment => {
+                    let result = BinaryExpr(operator, Box::new(result), Box::new(get_result!(rhs)));
+                    println!("rhs: {:?}", result);
+                    tokens.remove(0);//removes '='
+                    let name = match &tokens[0].value {
+                        Ident(val) => val.to_owned(),
+                        _ => return error("Varable name is improper")
+                    };
+                    tokens.remove(0);//removes name
+                    return Ok(AssignmentExpr(name, Box::new(result)));
+                }
                 _ => break,
             };
 
