@@ -1,6 +1,7 @@
 use regex::Regex;
 
 use crate::nil::token::{Token, TokenVal, TypeOf};
+use crate::nil::grammar::Value;
 use crate::nil::errorhandler::Error;
 use TokenVal::*;
 
@@ -48,6 +49,7 @@ pub fn tokenizer(input: String) -> Result<Vec<Token>, Error> {
 
 fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
     let token_re = Regex::new(concat!(
+        //r"(?P<string>\p'{Alphabetic}'\w*)|",
         r"(?P<ident>\p{Alphabetic}\w*)|",
         r"(?P<number>\d+\.?\d*)|",
         r"(?P<logical>(=|>|<|!)=?)|",
@@ -64,14 +66,21 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
     for caputure in token_re.captures_iter(line) {
         let c =  caputure.get(0).unwrap().start();
 
-        let token = if caputure.name("ident").is_some() {
+        let token = if caputure.name("logical").is_some() {
+            Logical(caputure.name("logical").unwrap().as_str().to_owned())
+            } else if caputure.name("ident").is_some() {
                 match caputure.name("ident").unwrap().as_str() {
+                    //use hashmap
+                    "true" => Value(Value::Bool(true)),
+                    "false" => Value(Value::Bool(false)),
                     "def" => Def,
                     "extern" => Extern,
                     "nif" => NIf,
                     "else" => Else,
                     "=" => Assignment,
                     "num" => Type(TypeOf::Num),
+                    "bool" => Type(TypeOf::Bool),
+                    //"str" => Type(TypeOf::String),
                     ident => Ident(ident.to_owned())
                 }
             } else if caputure.name("logical").is_some() {
@@ -79,9 +88,9 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
                 Logical(caputure.name("logical").unwrap().as_str().to_owned())
             } else if caputure.name("number").is_some() {
             match caputure.name("number").unwrap().as_str().parse() {
-                    Ok(number) => Number(number),
+                    Ok(number) => Value(Value::Num(number)),
                     Err(_) => {
-                        return Err(Error::at_mes_pt("Number Format Unrecognized", &format!("Number starting at {}:{} was not able to be parsed", line_num, c), (line_num, c)))
+                        return Err(Error::at_mes_pt("Logical Format Unrecognized", &format!("Number starting at {}:{} was not able to be parsed", line_num, c), (line_num, c)))
                     }
                 }
             } else if caputure.name("delimiter").is_some() {

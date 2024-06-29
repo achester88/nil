@@ -230,7 +230,7 @@ fn parse_conditional_expr(
         _ => None
     };
     
-    println!("--> {:?}\n", &raw_then);
+    println!("--> {:?}\n", &raw_cond);
     let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
     println!("Cond |{:?}|", cond);
     let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
@@ -315,6 +315,7 @@ fn parse_binary_expr(
     expr_precednce: i32,
     lhs: &Expression,
 ) -> Result<Expression, Error> {
+    println!("######## {:?}", &tokens);
     let mut result = lhs.clone();
 
     loop {
@@ -323,6 +324,7 @@ fn parse_binary_expr(
         }
         let (operator, precednce) = match &tokens[0].value {
             &Operator(ref op) | &Logical(ref op) => {
+                println!("!!!!!{:?}", op);
                 match settings.operator_precednece.get(op) {
                     //checks hashmap for op
                     Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),

@@ -3,6 +3,6 @@ Defines a square function, call it and outputs the results
 /*
 )
 ;{output} 5
-nif 5 == 5 (
+nif 5 == 6 (
 
 */

@@ -1,4 +1,4 @@
-use crate::nil::grammer::Value;
+use crate::nil::grammar::Value;
 
 #[derive(Debug)]
 pub struct Token {
@@ -8,7 +8,9 @@ pub struct Token {
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum TypeOf {
-    Num    
+    Num,
+    Bool,
+    String
 }
 
 #[derive(PartialEq, Clone, Debug)]

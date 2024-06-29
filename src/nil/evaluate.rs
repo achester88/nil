@@ -1,7 +1,17 @@
+use crate::get_bool;
 use crate::nil::grammar::*;
 use crate::nil::specialforms::SpecialForms;
 use crate::nil::scope::Scope;
 use Expression::*;
+
+macro_rules! get_result {
+    ( $e:expr ) => {
+        match $e {
+            Ok(x) => x,
+            Err(err) => return Err(err),
+        }
+    };
+}
 
 pub fn eval_ast(ast: Vec<ASTNode>) {
     let specialforms = SpecialForms::new();
@@ -29,27 +39,35 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> Value {
     return Value::Num(-1.0);
 }
 //eval args fn?
-fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Value {
+fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Result<Value, String> {
     match expr {
-        LiteralExpr(val) => val,
+        LiteralExpr(val) => Ok(val),
         VariableExpr(name) => {
             match scope.var.get(&name) {
-                Some(val) => *val,
+                Some(val) => Ok(val.clone()), //deref
                 None => error(format!("Undefined Varable: {}", name))
             } 
         },
         BinaryExpr(op, expr1, expr2) => {//split Binary Ops and built in fn?
-            let lhs = eval_expression(&sp, scope, *expr1);
-            let rhs = eval_expression(&sp, scope, *expr2);
-            run(sp, scope, op, vec!(lhs, rhs))
+            let lhs = get_result!(eval_expression(&sp, scope, *expr1));
+            let rhs = get_result!(eval_expression(&sp, scope, *expr2));
+            Ok(run(sp, scope, op, vec!(lhs, rhs)))
         },
-        ConditionalExpr => {
-            Value::Num(-1.0)
+        ConditionalExpr { cond_expr: cond, then_expr: then, else_expr: else_ep } => {
+            if get_bool!(get_result!(eval_expression(sp, scope, *cond))) {//not if
+                //do cond
+            } else {
+                // if else eval_expression
+            }
+            
+            Ok(Value::Num(-1.0))
         },
         CallExpr(name, args) => {
-            let args_vals = args.into_iter().map(|expr| eval_expression(&sp, scope, expr)).collect();
-            run(sp, scope, name, args_vals)
-        } 
+            let args_vals = args.into_iter().map(|expr| 
+                                                 get_result!(eval_expression(&sp, scope, expr))
+                                                ).collect();
+            Ok(run(sp, scope, name, args_vals))
+        }
     }
 }
 
@@ -70,7 +88,7 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
                     //extend scope
                     let mut temp_scope = scope.clone(); //find a better slouition
                     for i in 0..args.len() { //check args count matches
-                        temp_scope.var.insert(fun.prototype.args[i].to_string(), args[i]);
+                        temp_scope.var.insert(fun.prototype.args[i].to_string(), args[i].clone());
                     }
                     //eval
                     eval(

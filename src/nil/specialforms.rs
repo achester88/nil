@@ -1,4 +1,7 @@
 use std::collections::HashMap;
+#[macro_use]
+use crate::get_num;
+
 use crate::nil::grammar::Value;
 use crate::nil::errorhandler::Error;
 
@@ -15,15 +18,6 @@ use crate::nil::errorhandler::Error;
     };
 }*/
 
-macro_rules! get_num {
-    ( $arg:expr ) => {
-        match $arg {
-            Value::Num(num) => num,
-            _ => return Err(String::from("improper type of args"))//make clearer
-        }
-    };
-}
-
 type Callback = fn(Vec<Value>) -> Result<Value, String>;
 //user def fn call speial function that calls eval
 
@@ -39,6 +33,12 @@ impl SpecialForms {
         temp.insert(String::from("-"), sub);
         temp.insert(String::from("*"), mul);
         temp.insert(String::from("/"), div);
+        temp.insert(String::from("=="), equal);
+        temp.insert(String::from("!="), nequal);
+        temp.insert(String::from(">"), more);
+        temp.insert(String::from(">="), moreequal);
+        temp.insert(String::from("<="), lessequal);
+        temp.insert(String::from("<"), less);
 
         temp.insert(String::from("output"), output);
 
@@ -68,6 +68,25 @@ fn div(args: Vec<Value>) -> Result<Value, String> {
         return Err(String::from("Div by zero"));
     }
     Ok(Value::Num(get_num!(args[0]) / get_num!(args[1])))
+}
+
+fn equal(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_num!(args[0]) == get_num!(args[1])))
+}
+fn nequal(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_num!(args[0]) != get_num!(args[1])))
+}
+fn more(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_num!(args[0]) > get_num!(args[1])))
+}
+fn moreequal(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_num!(args[0]) >= get_num!(args[1])))
+}
+fn less(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_num!(args[0]) < get_num!(args[1])))
+}
+fn lessequal(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_num!(args[0]) <= get_num!(args[1])))
 }
 
 fn output(args: Vec<Value>) -> Result<Value, String> {
