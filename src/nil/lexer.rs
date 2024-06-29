@@ -75,6 +75,7 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
                     "false" => Value(Value::Bool(false)),
                     "def" => Def,
                     "extern" => Extern,
+                    "noop" => NWhile,
                     "nif" => NIf,
                     "else" => Else,
                     "=" => Assignment,

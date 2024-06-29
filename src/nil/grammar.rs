@@ -50,5 +50,6 @@ pub enum Expression {
     BinaryExpr(String, Box<Expression>, Box<Expression>),
     //cond, then, else
     ConditionalExpr{cond_expr: Box<Expression>, then_expr: Box<Expression>, else_expr: Option<Box<Expression>>},
+    LoopExpr{cond_expr: Box<Expression>, then_expr: Box<Expression>},
     CallExpr(String, Vec<Expression>)
 }

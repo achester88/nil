@@ -28,7 +28,10 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> Value {
                 if fun.prototype.name == "" {
                     println!("run");
                     
-                    return eval_expression(&sp, scope, fun.body);
+                    return match eval_expression(&sp, scope, fun.body) {
+                        Ok(val) => val,
+                        Err(err) => error(err)
+                    }
                 } else { //Named protype add to scope
                     scope.funs.insert(fun.prototype.name.clone(), fun);
                 }
@@ -54,18 +57,36 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
             Ok(run(sp, scope, op, vec!(lhs, rhs)))
         },
         ConditionalExpr { cond_expr: cond, then_expr: then, else_expr: else_ep } => {
-            if get_bool!(get_result!(eval_expression(sp, scope, *cond))) {//not if
-                //do cond
+            if !get_bool!(get_result!(eval_expression(sp, scope, *cond))) {//not if
+                eval_expression(sp, scope, *then)
             } else {
                 // if else eval_expression
+                println!("else");
+                match else_ep {
+                    Some(expr) => eval_expression(sp, scope, *expr),
+                    None => Ok(Value::Bool(false))
+                }
+                //return eval_expression(sp, scope, *else)
             }
             
-            Ok(Value::Num(-1.0))
+        },
+        LoopExpr { cond_expr: cond, then_expr: then} => {
+            while !get_bool!(get_result!(eval_expression(sp, scope, *cond.clone()))) {//rewirte as ref
+                eval_expression(sp, scope, *then.clone());//rewirte as ref
+            }
+            
+            Ok(Value::Bool(true))
         },
         CallExpr(name, args) => {
-            let args_vals = args.into_iter().map(|expr| 
-                                                 get_result!(eval_expression(&sp, scope, expr))
-                                                ).collect();
+            let mut args_vals: Vec<Value> = vec![];
+            for arg in args {
+                match eval_expression(&sp, scope, arg) {
+                    Ok(val) => args_vals.push(val),
+                    Err(err) => error(err)
+                }
+               // args.push(get_result!(eval_expression(&sp, scope, arg)));
+            }
+            //let args_vals = args.into_iter().map(|expr| get_result!(eval_expression(&sp, scope, expr))).collect();
             Ok(run(sp, scope, name, args_vals))
         }
     }

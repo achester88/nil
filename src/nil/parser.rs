@@ -170,12 +170,66 @@ fn parse_primary_expr(
         }
         Value(_) => parse_literal_expr(tokens, settings),
         NIf => parse_conditional_expr(tokens, settings),
+        NWhile => parse_loop_expr(tokens, settings),
         OpeningBrac => parse_call_expr(tokens, settings),
         OpeningPars => parse_parenthesis_expr(tokens, settings),
         _ => error(format!("error parsing primary expr with token: {:?}", tokens[0]).as_str()),
     };
 
     Ok(get_result!(expr))
+}
+
+fn parse_loop_expr(
+    tokens: &mut Vec<Token>,
+    settings: &mut ParserSettings,
+    ) -> Result<Expression, Error> {
+    tokens.remove(0); //removes NIf
+
+    let mut raw_cond = vec![];
+    let mut line = tokens[0].pos;
+
+    loop {
+        if tokens.len() == 0 {
+            return Err(Error::at("Expected '(' in nil statment", line)) //fix
+        }
+
+        match tokens[0].value {
+            OpeningPars => break,
+            _ => raw_cond.push(tokens.remove(0)),
+        }
+
+    }
+
+
+    let mut raw_then = vec![];
+    line = tokens[0].pos;
+
+    tokens.remove(0); //removes '('
+
+    loop {
+        if tokens.len() == 0 {
+            return Err(Error::at("Expected ')' nil statment starting", line)) //fix
+        }
+
+        match tokens[0].value {
+            ClosingPars => break,
+            _ => raw_then.push(tokens.remove(0)),
+        }
+
+    }
+    tokens.remove(0); // Remove ')'
+    //pop else token parse conditinal, 
+
+    println!("--> {:?}\n", &raw_cond);
+    let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
+    println!("Cond |{:?}|", cond);
+    let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
+    println!("Then |{:?}|", then);
+
+    Ok(LoopExpr{
+        cond_expr: Box::new(cond), 
+        then_expr: Box::new(then)
+    })
 }
 
 fn parse_conditional_expr(
@@ -229,13 +283,10 @@ fn parse_conditional_expr(
         }
         _ => None
     };
-    
-    println!("--> {:?}\n", &raw_cond);
-    let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
-    println!("Cond |{:?}|", cond);
-    let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
-    println!("Then |{:?}|", then);
 
+    let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
+    let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
+    
     Ok(ConditionalExpr{
         cond_expr: Box::new(cond), 
         then_expr: Box::new(then), 

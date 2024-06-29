@@ -1,8 +1,11 @@
 Defines a square function, call it and outputs the results
 
 /*
+
 )
+;{output} 10
+) else nif 5 == 6 (
 ;{output} 5
-nif 5 == 6 (
+nif 5 == 5 (
 
 */

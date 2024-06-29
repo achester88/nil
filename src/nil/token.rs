@@ -23,6 +23,7 @@ pub enum TokenVal {
     Def,
     Extern,
     NIf,
+    NWhile,
     Else,
     Assignment,
     Ident(String),
