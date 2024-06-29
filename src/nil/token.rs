@@ -1,3 +1,5 @@
+use crate::nil::grammer::Value;
+
 #[derive(Debug)]
 pub struct Token {
     pub value: TokenVal,
@@ -19,10 +21,11 @@ pub enum TokenVal {
     Def,
     Extern,
     NIf,
-    NElse,
+    Else,
     Assignment,
     Ident(String),
-    Number(f64),
+    Value(Value),
     Operator(String),
-    Type(TypeOf)
+    Type(TypeOf),
+    Logical(String)
 }

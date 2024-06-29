@@ -12,7 +12,7 @@ pub fn eval_ast(ast: Vec<ASTNode>) {
     }
 }
 
-fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> f64 {
+fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> Value {
     match node {
             ASTNode::FunctionNode(fun) => {
                 if fun.prototype.name == "" {
@@ -26,10 +26,10 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> f64 {
             ASTNode::ExternNode(prot) => {}
     }
 
-    return -1.0;
+    return Value::Num(-1.0);
 }
 //eval args fn?
-fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> f64 {
+fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Value {
     match expr {
         LiteralExpr(val) => val,
         VariableExpr(name) => {
@@ -43,7 +43,9 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> f6
             let rhs = eval_expression(&sp, scope, *expr2);
             run(sp, scope, op, vec!(lhs, rhs))
         },
-        ConditionalExpr => {-1.0},
+        ConditionalExpr => {
+            Value::Num(-1.0)
+        },
         CallExpr(name, args) => {
             let args_vals = args.into_iter().map(|expr| eval_expression(&sp, scope, expr)).collect();
             run(sp, scope, name, args_vals)
@@ -51,7 +53,7 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> f6
     }
 }
 
-fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<f64>) -> f64 {
+fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) -> Value {
     println!("name: {}, args: {:?}", fn_name, args);
 
     match sp.map.get(&fn_name) {

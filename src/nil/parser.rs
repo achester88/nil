@@ -29,6 +29,13 @@ impl ParserSettings {
         op_prec.insert("-".to_string(), 20);
         op_prec.insert("*".to_string(), 40);
         op_prec.insert("/".to_string(), 40);
+
+        op_prec.insert("==".to_string(), 15);
+        op_prec.insert("!=".to_string(), 15);
+        op_prec.insert(">".to_string(), 15);
+        op_prec.insert(">=".to_string(), 15);
+        op_prec.insert("<".to_string(), 15);
+        op_prec.insert("<=".to_string(), 15);
         ParserSettings {
             operator_precednece: op_prec,
         }
@@ -161,7 +168,7 @@ fn parse_primary_expr(
             tokens.remove(0);
             Ok(VariableExpr(id_name.to_string()))
         }
-        Number(_) => parse_literal_expr(tokens, settings),
+        Value(_) => parse_literal_expr(tokens, settings),
         NIf => parse_conditional_expr(tokens, settings),
         OpeningBrac => parse_call_expr(tokens, settings),
         OpeningPars => parse_parenthesis_expr(tokens, settings),
@@ -178,7 +185,7 @@ fn parse_conditional_expr(
     tokens.remove(0); //removes NIf
 
     let mut raw_cond = vec![];
-    let line = tokens[0].pos;
+    let mut line = tokens[0].pos;
         
     loop {
         if tokens.len() == 0 {
@@ -189,15 +196,51 @@ fn parse_conditional_expr(
             OpeningPars => break,
             _ => raw_cond.push(tokens.remove(0)),
         }
-        
+
     }
-    tokens.remove(0); //removes (
     
-    println!("{:?}", &raw_cond);
+    
+    let mut raw_then = vec![];
+    line = tokens[0].pos;
+
+    tokens.remove(0); //removes '('
+
+    loop {
+        if tokens.len() == 0 {
+            return Err(Error::at("Expected ')' nil statment starting", line)) //fix
+        }
+
+        match tokens[0].value {
+            ClosingPars => break,
+            _ => raw_then.push(tokens.remove(0)),
+        }
+
+    }
+    tokens.remove(0); // Remove ')'
+    //pop else token parse conditinal, 
+
+    let else_expr = match tokens.first() {
+        Some(val) => match val.value {
+            Else => {
+                tokens.remove(0); //removes Else
+                Some(Box::new(get_result!(parse_conditional_expr(tokens, settings))))}
+                ,
+            _ => None
+        }
+        _ => None
+    };
+    
+    println!("--> {:?}\n", &raw_then);
     let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
     println!("Cond |{:?}|", cond);
+    let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
+    println!("Then |{:?}|", then);
 
-    error("")
+    Ok(ConditionalExpr{
+        cond_expr: Box::new(cond), 
+        then_expr: Box::new(then), 
+        else_expr: else_expr
+    })
 }
 
 fn parse_call_expr(
@@ -236,7 +279,7 @@ fn parse_literal_expr(
     _settings: &mut ParserSettings,
 ) -> Result<Expression, Error> {
     match tokens.remove(0).value {
-        Number(val) => Ok(LiteralExpr(val)),
+        Value(val) => Ok(LiteralExpr(val)),
         _ => error("literal expected"),
     }
 }
@@ -279,7 +322,7 @@ fn parse_binary_expr(
             break;
         }
         let (operator, precednce) = match &tokens[0].value {
-            &Operator(ref op) => {
+            &Operator(ref op) | &Logical(ref op) => {
                 match settings.operator_precednece.get(op) {
                     //checks hashmap for op
                     Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),
@@ -287,6 +330,13 @@ fn parse_binary_expr(
                     _ => break,
                 }
             }
+            /* &Logical(ref op) => {
+                match settings.operator_precednece.get(op) {
+                    Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),
+                    None => return error(&format!("unkonwn operator: {}", op)),
+                    _ => break,
+                }
+            }*/
             _ => break,
         };
         tokens.remove(0);
@@ -298,7 +348,7 @@ fn parse_binary_expr(
                 break;
             }
             let binary_rhs = match &tokens[0].value {
-                &Operator(ref op) => match settings.operator_precednece.get(op) {
+                &Operator(ref op) | &Logical(ref op) => match settings.operator_precednece.get(op) {
                     Some(pr) if *pr > precednce => {
                         parse_binary_expr(tokens, settings, *pr, &(get_result!(rhs)))
                     }

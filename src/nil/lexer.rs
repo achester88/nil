@@ -6,7 +6,7 @@ use TokenVal::*;
 
 pub fn tokenizer(input: String) -> Result<Vec<Token>, Error> {
 
-    let mut tokens = vec![];    
+    let mut tokens = vec![];
     
     let mut by_lines: Vec<&str> = input.split("\n").collect();
     
@@ -50,6 +50,7 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
     let token_re = Regex::new(concat!(
         r"(?P<ident>\p{Alphabetic}\w*)|",
         r"(?P<number>\d+\.?\d*)|",
+        r"(?P<logical>(=|>|<|!)=?)|",
         r"(?P<delimiter>;)|",
         r"(?P<oppar>\()|",
         r"(?P<clpar>\))|",
@@ -68,18 +69,19 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
                     "def" => Def,
                     "extern" => Extern,
                     "nif" => NIf,
-                    "nelse" => NElse,
+                    "else" => Else,
                     "=" => Assignment,
                     "num" => Type(TypeOf::Num),
                     ident => Ident(ident.to_owned())
                 }
+            } else if caputure.name("logical").is_some() {
+                //println!("{:?}", caputure);
+                Logical(caputure.name("logical").unwrap().as_str().to_owned())
             } else if caputure.name("number").is_some() {
-                match caputure.name("number").unwrap().as_str().parse() {
+            match caputure.name("number").unwrap().as_str().parse() {
                     Ok(number) => Number(number),
                     Err(_) => {
                         return Err(Error::at_mes_pt("Number Format Unrecognized", &format!("Number starting at {}:{} was not able to be parsed", line_num, c), (line_num, c)))
-                        //println!("\x1b[91mError\x1b[0m Number Format Unrecognized");
-                        //panic!()
                     }
                 }
             } else if caputure.name("delimiter").is_some() {
