@@ -1,8 +1,8 @@
 modules = ["rust-stable"]
-run = "cargo run ./testProg/test.nil -l -p"
+run = "cargo run ./testProg/test.nil -p"
 
 [nix]
 channel = "stable-23_11"
 
 [deployment]
-run = ["sh", "-c", "cargo run ./testProg/test.nil -l -p"]
+run = ["sh", "-c", "cargo run ./testProg/test.nil"]

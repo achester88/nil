@@ -72,7 +72,7 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
             //println!("{:?}", caputure);
             match caputure.name("logical").unwrap().as_str() {
                 "=" => Assignment,
-                log => {println!("test");Logical(log.to_owned())},
+                log => {Logical(log.to_owned())},
             }
         } else if caputure.name("ident").is_some() {
             match caputure.name("ident").unwrap().as_str() {

@@ -221,9 +221,10 @@ fn parse_loop_expr(
     tokens.remove(0); // Remove ')'
     //pop else token parse conditinal, 
 
-    println!("--> {:?}\n", &raw_cond);
+    println!("------> {:?}", raw_then);
+    //println!("--> {:?}\n", &raw_cond);
     let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
-    println!("Cond |{:?}|", cond);
+    //println!("Cond |{:?}|", cond);
     let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
     println!("Then |{:?}|", then);
 
@@ -284,7 +285,6 @@ fn parse_conditional_expr(
         }
         _ => None
     };
-
     let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
     let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
     
@@ -355,33 +355,28 @@ fn parse_expr(
     settings: &mut ParserSettings,
     hold: &Vec<Token>,
 ) -> Result<Expression, Error> {
-    let lhs = parse_primary_expr(tokens, settings);
+    let mut lhs = parse_primary_expr(tokens, settings);
 
-    if(tokens.len() != 0) {
+    if tokens.len() != 0 {
     match &tokens[0].value {
         Type(type_of) => {
             if let VariableExpr(name) = get_result!(lhs) {
                 match type_of {
-                    TypeOf::Num => return Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Num(0.0))))),
-                    TypeOf::String => return Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::String(String::from("")))))),
-                    TypeOf::Bool => return Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Bool(false))))),
+                    TypeOf::Num => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Num(0.0))))),
+                    TypeOf::String => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::String(String::from("")))))),
+                    TypeOf::Bool => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Bool(false))))),
                     }
             } else {
                 return error("Error parsing Variable Init")
             }
             
-            
         },
         _ => {}
     };
     }
-            let expr = parse_binary_expr(tokens, settings, 0, &(get_result!(lhs)));
-            Ok(get_result!(expr))
-        
-        //check if next is type if so create var
-    //let expr = parse_binary_expr(tokens, settings, 0, &(get_result!(lhs)));
-
-    //Ok(get_result!(expr))
+    
+    let expr = parse_binary_expr(tokens, settings, 0, &(get_result!(lhs)));
+    Ok(get_result!(expr))
 }
 
 fn parse_binary_expr(
@@ -398,7 +393,7 @@ fn parse_binary_expr(
         }
         let (operator, precednce) = match &tokens[0].value {
             &Operator(ref op) | &Logical(ref op) => {
-                println!("!!!!!{:?}", op);
+                //println!("!!!!!{:?}", op);
                 match settings.operator_precednece.get(op) {
                     //checks hashmap for op
                     Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),
@@ -433,7 +428,7 @@ fn parse_binary_expr(
                 },
                 &Assignment => {
                     let result = BinaryExpr(operator, Box::new(result), Box::new(get_result!(rhs)));
-                    println!("rhs: {:?}", result);
+                    //println!("rhs: {:?}", result);
                     tokens.remove(0);//removes '='
                     let name = match &tokens[0].value {
                         Ident(val) => val.to_owned(),

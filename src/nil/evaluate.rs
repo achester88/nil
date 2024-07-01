@@ -77,7 +77,7 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
         },
         LoopExpr { cond_expr: cond, then_expr: then} => {
             while !get_bool!(get_result!(eval_expression(sp, scope, *cond.clone()))) {//rewirte as ref
-                eval_expression(sp, scope, *then.clone());//rewirte as ref
+                get_result!(eval_expression(sp, scope, *then.clone()));//rewirte as ref
             }
             
             Ok(Value::Bool(true))

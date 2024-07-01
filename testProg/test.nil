@@ -1,7 +1,13 @@
 Defines a square function, call it and outputs the results
 
 /*
+)
+
+;count + 1 = count
 ;{output} count
-;5 + 5 = count
+
+;noop count > 100 (
+;0 = count
 ;count num
+
 */
