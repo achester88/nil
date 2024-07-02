@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-#[macro_use]
 use crate::get_num;
 
 use crate::nil::grammar::Value;
@@ -57,7 +56,7 @@ fn sub(args: Vec<Value>) -> Result<Value, String> {
 }
 
 fn mul(args: Vec<Value>) -> Result<Value, String> {
-    Ok(Value::Num(get_num!(args[0]) * get_num!((args[1]))))
+    Ok(Value::Num(get_num!(args[0]) * get_num!(args[1])))
 }
 
 fn div(args: Vec<Value>) -> Result<Value, String> {

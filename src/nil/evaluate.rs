@@ -35,7 +35,7 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> Value {
                     scope.funs.insert(fun.prototype.name.clone(), fun);
                 }
             },
-            ASTNode::ExternNode(prot) => {}
+            ASTNode::ExternNode(_) => {}
     }
 
     return Value::Num(-1.0);
@@ -46,14 +46,14 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
         LiteralExpr(val) => Ok(val),
         AssignmentExpr(name, expr) => {
             let set = get_result!(eval_expression(sp, scope, *expr));
-            scope.var.insert(name, set);
+            scope.set_var(name, set);
             
             Ok(Value::Bool(true))
         },
         VariableExpr(name) => {
-            match scope.var.get(&name) {
+            match scope.get_var(&name) {
                 Some(val) => Ok(val.clone()), //deref
-                None => error(format!("Undefined Varable: {}", name))
+                None => error(format!("Undefined Varable: {:?}", name))
             } 
         },
         BinaryExpr(op, expr1, expr2) => {//split Binary Ops and built in fn?
@@ -110,21 +110,25 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
         None => {
             match scope.funs.get(&fn_name) {
                 Some(fun) => {
+                    let fun_copy = fun.clone();//find better sloution
                     //println!("Found: {:?}", fun);
                     //extend scope
-                    let mut temp_scope = scope.clone(); //find a better slouition
+                    scope.create_depth();
+
                     for i in 0..args.len() { //check args count matches
-                        temp_scope.var.insert(fun.prototype.args[i].to_string(), args[i].clone());
+                        scope.set_var(fun_copy.prototype.args[i].to_string(), args[i].clone());
                     }
                     //eval
-                    eval(
+                    let res = eval(
                         ASTNode::FunctionNode(Function {
                             prototype: Prototype {name: String::from(""), 
-                            args: vec![]}, body: fun.body.clone()
+                            args: vec![]}, body: fun_copy.body.clone()
                         }),
                         &sp,
-                        &mut temp_scope
-                    )
+                        scope
+                    );
+                    scope.remove_depth();
+                    return res;
                 },
                 None => error(format!("Undefined Function: {}", fn_name))
             }

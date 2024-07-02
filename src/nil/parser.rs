@@ -353,7 +353,7 @@ fn parse_parenthesis_expr(
 fn parse_expr(
     tokens: &mut Vec<Token>,
     settings: &mut ParserSettings,
-    hold: &Vec<Token>,
+    _hold: &Vec<Token>,
 ) -> Result<Expression, Error> {
     let mut lhs = parse_primary_expr(tokens, settings);
 
