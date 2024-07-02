@@ -32,6 +32,8 @@ impl SpecialForms {
         temp.insert(String::from("-"), sub);
         temp.insert(String::from("*"), mul);
         temp.insert(String::from("/"), div);
+        temp.insert(String::from("%"), rim);
+
         temp.insert(String::from("=="), equal);
         temp.insert(String::from("!="), nequal);
         temp.insert(String::from(">"), more);
@@ -67,6 +69,16 @@ fn div(args: Vec<Value>) -> Result<Value, String> {
         return Err(String::from("Div by zero"));
     }
     Ok(Value::Num(get_num!(args[0]) / get_num!(args[1])))
+}
+
+fn rim(args: Vec<Value>) -> Result<Value, String> {
+    //let parms = vec!(Value::Num, Value::Num);
+    //let Value::Num(num1) = args[0];
+    //check_args!(args, parms);
+    if get_num!(args[1]) == 0.0 {
+        return Err(String::from("Div by zero"));
+    }
+    Ok(Value::Num(get_num!(args[0]) % get_num!(args[1])))
 }
 
 fn equal(args: Vec<Value>) -> Result<Value, String> {

@@ -37,13 +37,15 @@ impl Scope {
         return Ok(Value::Bool(true))
     }
 
-    pub fn create_depth(&mut self) {
-        println!("str: {:?}", &self.var);
+    pub fn create_depth(&mut self) -> Result<(), Error> {
+        //println!("str: {:?}", &self.var);
         self.var.push(HashMap::new());
-        println!("end: {:?}", &self.var);
+        //println!("end: {:?}", &self.var);
+        Ok(())
     }
 
-    pub fn remove_depth(&mut self) {
+    pub fn remove_depth(&mut self) -> Result<(), Error> {
         self.var.pop();
+        Ok(())
     }
 }

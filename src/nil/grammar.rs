@@ -49,8 +49,8 @@ pub enum Expression {
     VariableExpr(String),
     BinaryExpr(String, Box<Expression>, Box<Expression>),
     //cond, then, else
-    ConditionalExpr{cond_expr: Box<Expression>, then_expr: Box<Expression>, else_expr: Option<Box<Expression>>},
-    LoopExpr{cond_expr: Box<Expression>, then_expr: Box<Expression>},
+    ConditionalExpr{cond_expr: Box<Expression>, then_expr: Box<Vec<ASTNode>>, else_expr: Option<Box<Expression>>},
+    LoopExpr{cond_expr: Box<Expression>, then_expr: Box<Vec<ASTNode>>},
     AssignmentExpr(String, Box<Expression>),
     CallExpr(String, Vec<Expression>)
 }

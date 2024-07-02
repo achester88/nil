@@ -62,8 +62,12 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
             Ok(run(sp, scope, op, vec!(lhs, rhs)))
         },
         ConditionalExpr { cond_expr: cond, then_expr: then, else_expr: else_ep } => {
-            if !get_bool!(get_result!(eval_expression(sp, scope, *cond))) {//not if
-                eval_expression(sp, scope, *then)
+            if !(get_bool!(get_result!(eval_expression(sp, scope, *cond)))) {//not if 
+                //eval_expression(sp, scope, *then)
+                for node in *then {
+                    eval(node, sp, scope);
+                }
+                Ok(Value::Bool(true))
             } else {
                 // if else eval_expression
                 //println!("else");
@@ -77,7 +81,10 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
         },
         LoopExpr { cond_expr: cond, then_expr: then} => {
             while !get_bool!(get_result!(eval_expression(sp, scope, *cond.clone()))) {//rewirte as ref
-                get_result!(eval_expression(sp, scope, *then.clone()));//rewirte as ref
+                //get_result!(eval_expression(sp, scope, *then.clone()));//rewirte as ref
+                for node in &*then {
+                    eval(node.clone(), sp, scope); //find better sloution
+                }
             }
             
             Ok(Value::Bool(true))

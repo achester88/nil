@@ -30,6 +30,8 @@ impl ParserSettings {
         op_prec.insert("*".to_string(), 40);
         op_prec.insert("/".to_string(), 40);
 
+        op_prec.insert("%".to_string(), 40);
+
         op_prec.insert("==".to_string(), 15);
         op_prec.insert("!=".to_string(), 15);
         op_prec.insert(">".to_string(), 15);
@@ -162,6 +164,7 @@ fn parse_primary_expr(
     if &tokens[0].value == &Delimiter {
         tokens.remove(0);
     }
+    //println!("PPE: {:?}", tokens);
     let expr = match &tokens[0].value {
         Ident(name) => {
             //Only variable start with Ident
@@ -203,6 +206,7 @@ fn parse_loop_expr(
 
 
     let mut raw_then = vec![];
+    let mut pars = 1;
     line = tokens[0].pos;
 
     tokens.remove(0); //removes '('
@@ -213,20 +217,25 @@ fn parse_loop_expr(
         }
 
         match tokens[0].value {
-            ClosingPars => break,
-            _ => raw_then.push(tokens.remove(0)),
+            OpeningPars => pars += 1,
+            ClosingPars => pars -= 1,
+            _ => {}
         }
-
+        if pars == 0 {
+            break
+        } else {
+            raw_then.push(tokens.remove(0))
+        }
     }
     tokens.remove(0); // Remove ')'
     //pop else token parse conditinal, 
 
-    println!("------> {:?}", raw_then);
+    //println!("------> {:?}", raw_then);
     //println!("--> {:?}\n", &raw_cond);
     let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
     //println!("Cond |{:?}|", cond);
-    let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
-    println!("Then |{:?}|", then);
+    let then = get_result!(parser(&mut raw_then, settings));
+    //println!("Then |{:?}|", then);
 
     Ok(LoopExpr{
         cond_expr: Box::new(cond), 
@@ -239,7 +248,6 @@ fn parse_conditional_expr(
     settings: &mut ParserSettings,
     ) -> Result<Expression, Error> {
     tokens.remove(0); //removes NIf
-
     let mut raw_cond = vec![];
     let mut line = tokens[0].pos;
         
@@ -257,18 +265,27 @@ fn parse_conditional_expr(
     
     
     let mut raw_then = vec![];
-    line = tokens[0].pos;
+    let mut pars = 1;
 
+    line = tokens[0].pos;
+    //println!("{:?} left", tokens);
     tokens.remove(0); //removes '('
 
     loop {
+        //println!("||| {:?}", &tokens[0]);
         if tokens.len() == 0 {
             return Err(Error::at("Expected ')' nil statment starting", line)) //fix
         }
 
         match tokens[0].value {
-            ClosingPars => break,
-            _ => raw_then.push(tokens.remove(0)),
+            OpeningPars => pars += 1,
+            ClosingPars => pars -= 1,
+            _ => {}
+        }
+        if pars == 0 {
+            break
+        } else {
+            raw_then.push(tokens.remove(0))
         }
 
     }
@@ -286,8 +303,8 @@ fn parse_conditional_expr(
         _ => None
     };
     let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
-    let then = get_result!(parse_expr(&mut raw_then, settings, &Vec::new()));
-    
+    let then = get_result!(parser(&mut raw_then, settings));
+
     Ok(ConditionalExpr{
         cond_expr: Box::new(cond), 
         then_expr: Box::new(then), 
