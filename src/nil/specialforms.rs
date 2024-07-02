@@ -102,7 +102,6 @@ fn lessequal(args: Vec<Value>) -> Result<Value, String> {
 
 fn output(args: Vec<Value>) -> Result<Value, String> {
     let mut out: Vec<char> = vec![];
-
     for i in 0..args.len() {
         //let str_val = args[i].to_string();
         let str_val = match &args[i] {
@@ -112,7 +111,9 @@ fn output(args: Vec<Value>) -> Result<Value, String> {
         };
         
         out.append(&mut str_val.chars().collect());
-        out.push(' ');
+        if i != args.len()-1 {
+            out.push(' ');
+        }
     }
 
     println!("{}", out.into_iter().collect::<String>());

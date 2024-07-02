@@ -345,8 +345,24 @@ fn parse_call_expr(
 
 fn parse_literal_expr(
     tokens: &mut Vec<Token>,
-    _settings: &mut ParserSettings,
+    settings: &mut ParserSettings,
 ) -> Result<Expression, Error> {
+    if tokens.len() > 1 {
+        match &tokens[1].value {
+            Assignment => {
+                let Value(value) = tokens.remove(0).value else { return Err(Error::at_mes_pt("Expected Value", "Value of type num, str, or bool was expected at varable defintion", tokens[0].pos))};
+
+                tokens.remove(0); //remove '='
+
+                let Ident(name) = tokens.remove(0).value else {return Err(Error::at_pt("Expected Varable Name", tokens[0].pos))};
+                
+                return Ok(AssignmentExpr(name, Box::new(LiteralExpr(value))));
+
+            }
+            _ => {}
+        }
+    }
+    
     match tokens.remove(0).value {
         Value(val) => Ok(LiteralExpr(val)),
         _ => error("literal expected"),

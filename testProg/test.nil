@@ -1,16 +1,7 @@
-Defines a square function, call it and outputs the results
+Basic Hello World
 
 /*
-)
-  ;count + 1 = count
-    )
-      ;{output} count
-    ) else nif count % 5 == 0 (
-      ;{output} 0
-    nif count % 5 != 0 (
-
-;noop count > 100 (
-
-;1 = count
-;count num
+;{output} name
+;,hello world!, = name
+;name str
 */

@@ -53,7 +53,7 @@ impl fmt::Debug for Token {
                 match val {
                     Value::Num(v) => v.to_string(),
                     Value::Bool(bool) => bool.to_string(),
-                    Value::String(str) => str.to_string(),
+                    Value::String(str) => String::from("\"") + str + "\"",
                 }
             ),
             TokenVal::Operator(str) => write!(f, "Op({})", str),
