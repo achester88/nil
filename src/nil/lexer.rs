@@ -53,7 +53,7 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
         r"(?P<string>,(.*?)*,)|",
         r"(?P<ident>\p{Alphabetic}\w*)|",
         r"(?P<number>\d+\.?\d*)|",
-        r"(?P<logical>(=|>|<|!)=?)|",
+        r"(?P<logical>((=|>|<|!)=?|(\|\||&&)))|",
         r"(?P<delimiter>;)|",
         r"(?P<oppar>\()|",
         r"(?P<clpar>\))|",
@@ -72,12 +72,11 @@ fn tokenize_line(line: &str, line_num: usize) -> Result<Vec<Token>, Error> {
             //println!("{:?}", caputure);
             match caputure.name("logical").unwrap().as_str() {
                 "=" => Assignment,
-                log => {Logical(log.to_owned())},
+                log => Logical(log.to_owned()),
             }
         } else if caputure.name("string").is_some() {
-            let name = caputure.name("string").unwrap();
-            //println!("{:?}", );
-            Value(Value::String(name.as_str()[1..(name.end()-2)].to_owned()))
+            let name = caputure.name("string").unwrap().as_str();
+            Value(Value::String(name[1..(name.len()-1)].to_owned()))
         } else if caputure.name("ident").is_some() {
             match caputure.name("ident").unwrap().as_str() {
                 //use hashmap

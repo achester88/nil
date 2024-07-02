@@ -5,9 +5,13 @@ Defines a square function, call it and outputs the results
   ;count + 1 = count
     )
       ;{output} count
-    ) else nif count % 5 == 0 (
-      ;{output} 0
-    nif count % 5 != 0 (
+    ) else nif false (
+      ;{output} ,Fizz,
+    ) else nif count % 3 != 0 (
+      ;{output} ,Buzz,
+    ) else nif count % 5 != 0 (
+      ;{output} ,FizzBuzz,
+    nif count % 5 != 0 && count % 3 != 0 (
 
 ;noop count > 100 (
 

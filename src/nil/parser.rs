@@ -38,6 +38,9 @@ impl ParserSettings {
         op_prec.insert(">=".to_string(), 15);
         op_prec.insert("<".to_string(), 15);
         op_prec.insert("<=".to_string(), 15);
+
+        op_prec.insert("&&".to_string(), 10);
+        op_prec.insert("||".to_string(), 10);
         
         ParserSettings {
             operator_precednece: op_prec,
@@ -230,12 +233,8 @@ fn parse_loop_expr(
     tokens.remove(0); // Remove ')'
     //pop else token parse conditinal, 
 
-    //println!("------> {:?}", raw_then);
-    //println!("--> {:?}\n", &raw_cond);
     let cond = get_result!(parse_expr(&mut raw_cond, settings, &Vec::new()));
-    //println!("Cond |{:?}|", cond);
     let then = get_result!(parser(&mut raw_then, settings));
-    //println!("Then |{:?}|", then);
 
     Ok(LoopExpr{
         cond_expr: Box::new(cond), 
@@ -268,11 +267,9 @@ fn parse_conditional_expr(
     let mut pars = 1;
 
     line = tokens[0].pos;
-    //println!("{:?} left", tokens);
     tokens.remove(0); //removes '('
 
     loop {
-        //println!("||| {:?}", &tokens[0]);
         if tokens.len() == 0 {
             return Err(Error::at("Expected ')' nil statment starting", line)) //fix
         }
@@ -346,22 +343,7 @@ fn parse_call_expr(
 fn parse_literal_expr(
     tokens: &mut Vec<Token>,
     settings: &mut ParserSettings,
-) -> Result<Expression, Error> {
-    if tokens.len() > 1 {
-        match &tokens[1].value {
-            Assignment => {
-                let Value(value) = tokens.remove(0).value else { return Err(Error::at_mes_pt("Expected Value", "Value of type num, str, or bool was expected at varable defintion", tokens[0].pos))};
-
-                tokens.remove(0); //remove '='
-
-                let Ident(name) = tokens.remove(0).value else {return Err(Error::at_pt("Expected Varable Name", tokens[0].pos))};
-                
-                return Ok(AssignmentExpr(name, Box::new(LiteralExpr(value))));
-
-            }
-            _ => {}
-        }
-    }
+) -> Result<Expression, Error> { 
     
     match tokens.remove(0).value {
         Value(val) => Ok(LiteralExpr(val)),
@@ -419,28 +401,27 @@ fn parse_binary_expr(
     lhs: &Expression,
 ) -> Result<Expression, Error> {
     let mut result = lhs.clone();
-
+    
     loop {
         if tokens.len() == 0 {
             break;
         }
         let (operator, precednce) = match &tokens[0].value {
             &Operator(ref op) | &Logical(ref op) => {
-                //println!("!!!!!{:?}", op);
+                
                 match settings.operator_precednece.get(op) {
                     //checks hashmap for op
                     Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),
                     None => return error(&format!("unkonwn operator: {}", op)),
                     _ => break,
                 }
-            }
-            /* &Logical(ref op) => {
-                match settings.operator_precednece.get(op) {
-                    Some(pr) if *pr >= expr_precednce => (op.clone(), *pr),
-                    None => return error(&format!("unkonwn operator: {}", op)),
-                    _ => break,
-                }
-            }*/
+            },
+            &Assignment => {
+                tokens.remove(0);
+                let Ident(name) = tokens.remove(0).value else {return Err(Error::at_pt("Expected Variable Name", tokens[0].pos))};
+                return Ok(AssignmentExpr(name, Box::new(result)));
+            },
+            
             _ => break,
         };
         tokens.remove(0);
@@ -461,7 +442,6 @@ fn parse_binary_expr(
                 },
                 &Assignment => {
                     let result = BinaryExpr(operator, Box::new(result), Box::new(get_result!(rhs)));
-                    //println!("rhs: {:?}", result);
                     tokens.remove(0);//removes '='
                     let name = match &tokens[0].value {
                         Ident(val) => val.to_owned(),

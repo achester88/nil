@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::get_num;
+use crate::{get_num, get_bool};
 
 use crate::nil::grammar::Value;
 use crate::nil::errorhandler::Error;
@@ -33,7 +33,9 @@ impl SpecialForms {
         temp.insert(String::from("*"), mul);
         temp.insert(String::from("/"), div);
         temp.insert(String::from("%"), rim);
-
+        
+        temp.insert(String::from("||"), and);
+        temp.insert(String::from("&&"), or);
         temp.insert(String::from("=="), equal);
         temp.insert(String::from("!="), nequal);
         temp.insert(String::from(">"), more);
@@ -98,6 +100,14 @@ fn less(args: Vec<Value>) -> Result<Value, String> {
 }
 fn lessequal(args: Vec<Value>) -> Result<Value, String> {
     Ok(Value::Bool(get_num!(args[0]) <= get_num!(args[1])))
+}
+
+fn and(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_bool!(args[0]) && get_bool!(args[1])))
+}
+
+fn or(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Bool(get_bool!(args[0]) || get_bool!(args[1])))
 }
 
 fn output(args: Vec<Value>) -> Result<Value, String> {

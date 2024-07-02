@@ -1,7 +1,6 @@
 Basic Hello World
 
 /*
-;{output} name
-;,hello world!, = name
-;name str
+;{output} ,hello,
+;1 = val
 */

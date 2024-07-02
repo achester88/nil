@@ -63,25 +63,21 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
         },
         ConditionalExpr { cond_expr: cond, then_expr: then, else_expr: else_ep } => {
             if !(get_bool!(get_result!(eval_expression(sp, scope, *cond)))) {//not if 
-                //eval_expression(sp, scope, *then)
                 for node in *then {
                     eval(node, sp, scope);
                 }
                 Ok(Value::Bool(true))
             } else {
                 // if else eval_expression
-                //println!("else");
                 match else_ep {
                     Some(expr) => eval_expression(sp, scope, *expr),
                     None => Ok(Value::Bool(false))
                 }
-                //return eval_expression(sp, scope, *else)
             }
             
         },
         LoopExpr { cond_expr: cond, then_expr: then} => {
             while !get_bool!(get_result!(eval_expression(sp, scope, *cond.clone()))) {//rewirte as ref
-                //get_result!(eval_expression(sp, scope, *then.clone()));//rewirte as ref
                 for node in &*then {
                     eval(node.clone(), sp, scope); //find better sloution
                 }
@@ -96,16 +92,15 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
                     Ok(val) => args_vals.push(val),
                     Err(err) => error(err)
                 }
-               // args.push(get_result!(eval_expression(&sp, scope, arg)));
             }
-            //let args_vals = args.into_iter().map(|expr| get_result!(eval_expression(&sp, scope, expr))).collect();
+
             Ok(run(sp, scope, name, args_vals))
         }
     }
 }
 
 fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) -> Value {
-    //println!("name: {}, args: {:?}", fn_name, args);
+    //println!("run name: {}, args: {:?}", fn_name, args);
 
     match sp.map.get(&fn_name) {
         Some(fun) => {
@@ -118,7 +113,6 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
             match scope.funs.get(&fn_name) {
                 Some(fun) => {
                     let fun_copy = fun.clone();//find better sloution
-                    //println!("Found: {:?}", fun);
                     //extend scope
                     scope.create_depth();
 
