@@ -108,7 +108,7 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
 }
 
 fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) -> Value {
-    //println!("run name: {}, args: {:?}", fn_name, args);
+    println!("run name: {}, args: {:?}", fn_name, args);
 
     match sp.map.get(&fn_name) {
         Some(fun) => {
@@ -125,7 +125,7 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
                     scope.create_depth();
 
                     for i in 0..args.len() { //check args count matches
-                        scope.set_var(fun_copy.prototype.args[i].to_string(), args[i].clone());
+                        scope.set_var_local(fun_copy.prototype.args[i].to_string(), args[i].clone());
                     }
                     //eval
                     let res = eval(

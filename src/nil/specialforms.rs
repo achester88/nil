@@ -1,4 +1,5 @@
 use std::io;
+use std::io::Write;
 use std::collections::HashMap;
 use crate::{get_num, get_bool};
 
@@ -137,12 +138,24 @@ fn str_input(args: Vec<Value>) -> Result<Value, String> {
     let mut input = String::new();
     std::io::stdin().read_line(&mut input).unwrap();
 
-    Ok(Value::String(input))
+    Ok(Value::String(input.replace("\n","")))
 }
 
 fn num_input(args: Vec<Value>) -> Result<Value, String> {
     let mut input = String::new();
+
+    match args.first() {
+        Some(Value::String(val)) => {
+            print!("{}", val);
+            io::stdout().flush().unwrap();
+        },
+        _ => {}
+    }
+    
     std::io::stdin().read_line(&mut input).unwrap();
 
-    Ok(Value::Num(0.0))
+    match input.replace("\n","").parse() {
+        Ok(num) => Ok(Value::Num(num)),
+        Err(_) => Err(String::from("Unable to convert input to Number"))
+    }
 }

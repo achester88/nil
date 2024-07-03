@@ -2,11 +2,18 @@ Hello World A Function Call and Returns
 
 /*
 
-;{output} {hello_world} ,Hello,
+;
+;{output} ,Value:, {sq} val
+;{num_input} ,Enter Number: , = val
 
-) {x} hello_world
-  ;,World,
-  ;{output} x
+) {x} sq
+)
+  ;n1 + n2
+  ;{sq} (x-1) = n2
+  ;{sq} (x-2) = n1 
+) else nif x <= 2 (
+  ;1
+nif x > 2 (
 def (
 
 */

@@ -192,7 +192,7 @@ fn parse_primary_expr(
     if &tokens[0].value == &Delimiter {
         tokens.remove(0);
     }
-    //println!("PPE: {:?}", tokens);
+    println!("PPE: {:?}", tokens);
     let expr = match &tokens[0].value {
         Ident(name) => {
             //Only variable start with Ident
@@ -358,9 +358,12 @@ fn parse_call_expr(
         }
         match &tokens[0].value {
             Delimiter => break, //Next line(end of args) starts with ';'
-            _ => args.push(get_result!(parse_expr(tokens, settings, &Vec::new()))),
+            Assignment => break,
+            _ => args.push(get_result!(parse_primary_expr(tokens, settings)))//args.push(get_result!(parse_expr(tokens, settings, &Vec::new()))),
         }
     }
+
+    println!("args: {:?}", args);
 
     Ok(CallExpr(name, args))
 }
