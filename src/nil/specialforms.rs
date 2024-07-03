@@ -1,3 +1,4 @@
+use std::io;
 use std::collections::HashMap;
 use crate::{get_num, get_bool};
 
@@ -44,6 +45,8 @@ impl SpecialForms {
         temp.insert(String::from("<"), less);
 
         temp.insert(String::from("output"), output);
+        temp.insert(String::from("num_input"), num_input);
+        temp.insert(String::from("str_input"), str_input);
 
         SpecialForms {map: temp}
     }
@@ -128,4 +131,18 @@ fn output(args: Vec<Value>) -> Result<Value, String> {
 
     println!("{}", out.into_iter().collect::<String>());
     Ok(Value::Bool(true))
+}
+
+fn str_input(args: Vec<Value>) -> Result<Value, String> {
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+
+    Ok(Value::String(input))
+}
+
+fn num_input(args: Vec<Value>) -> Result<Value, String> {
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).unwrap();
+
+    Ok(Value::Num(0.0))
 }
