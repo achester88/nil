@@ -47,9 +47,9 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
         AssignmentExpr(name, expr, init) => {
             let set = get_result!(eval_expression(sp, scope, *expr));
             if init {
-                scope.set_var_local(name, set);
+                let _ = scope.set_var_local(name, set);
             } else {
-                scope.set_var(name, set);
+                let _ = scope.set_var(name, set);
             }
             
             Ok(Value::Bool(true))
@@ -130,11 +130,11 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
                 Some(fun) => {
                     let fun_copy = fun.clone();//find better sloution
                     //extend scope
-                    scope.create_depth();
+                    let _ = scope.create_depth();
                     //println!("-----S{:?}S-----", scope.var.len());
 
                     for i in 0..args.len() { //check args count matches
-                        scope.set_var_local(fun_copy.prototype.args[i].to_string(), args[i].clone());
+                        let _ = scope.set_var_local(fun_copy.prototype.args[i].to_string(), args[i].clone());
                     }
                     //eval
                     let res = eval(
@@ -145,7 +145,7 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
                         &sp,
                         scope
                     );
-                    scope.remove_depth();
+                    let _ = scope.remove_depth();
                     //println!("-----E{:?}E-----", scope.var.len());
                     return res;
                 },

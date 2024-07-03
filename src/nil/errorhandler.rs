@@ -32,7 +32,7 @@ impl Error {
         Error {message: mes.to_string(), desc: Some(desc.to_string()), pos: Some(pos), point: true}
     } 
 
-    pub fn test() -> Self {
+    pub fn _test() -> Self {
         Error::desc("test error", "This error was written as a test of NIL's debuging ablity")
     }
 }
