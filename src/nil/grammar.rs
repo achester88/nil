@@ -28,7 +28,7 @@ macro_rules! get_num {
     ( $arg:expr ) => {
         match $arg {
             Value::Num(num) => num,
-            _ => return Err(String::from("improper type of args"))//make clearer
+            _ => return Err(String::from("improper type of args for num"))//make clearer
         }
     };
 }
@@ -38,7 +38,7 @@ macro_rules! get_bool {
     ( $arg:expr ) => {
         match $arg {
             Value::Bool(bool) => bool,
-            _ => return Err(String::from("improper type of args"))//make clearer
+            _ => return Err(String::from("improper type of args for bool"))//make clearer
         }
     };
 }

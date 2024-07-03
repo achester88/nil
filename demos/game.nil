@@ -1,0 +1,30 @@
+
+Game Loop
+/*
+)
+  )
+    )
+      ;guess + half = guess
+    ;nif val != ,Higher, (
+    ;guess / 2 = half
+    ;{str_input} ,Is Your Answer Higher or Lower: , = val
+  ) else nif ,No, (
+    ;true = game_over
+    ;{output} ,I Win,
+  ;nif ans != ,Yes, (
+  ;{str_input} ,Am I correct?: , = ans
+  ;{output} ,My Guess Is:, guess
+;noop game_over (
+  
+;{output} ,...,
+;{output} ,Pick A Number Between 1 and 100, 
+*/
+
+Gobal Var Init
+/*
+;50 = guess
+;guess num
+
+;false = game_over
+;game_over bool
+*/

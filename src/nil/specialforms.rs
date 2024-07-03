@@ -88,10 +88,20 @@ fn rim(args: Vec<Value>) -> Result<Value, String> {
 }
 
 fn equal(args: Vec<Value>) -> Result<Value, String> {
-    Ok(Value::Bool(get_num!(args[0]) == get_num!(args[1])))
+    match (&args[0], &args[1]) {
+        (&Value::Num(ref v1), &Value::Num(ref v2)) => Ok(Value::Bool(v1 == v2)),
+        (&Value::String(ref v1), &Value::String(ref v2)) => Ok(Value::Bool(v1 == v2)),
+        (&Value::Bool(ref v1), &Value::Bool(ref v2)) => Ok(Value::Bool(v1 == v2)),
+        _ => Ok(Value::Bool(false))
+    }
 }
 fn nequal(args: Vec<Value>) -> Result<Value, String> {
-    Ok(Value::Bool(get_num!(args[0]) != get_num!(args[1])))
+    match (&args[0], &args[1]) {
+        (&Value::Num(ref v1), &Value::Num(ref v2)) => Ok(Value::Bool(v1 != v2)),
+        (&Value::String(ref v1), &Value::String(ref v2)) => Ok(Value::Bool(v1 != v2)),
+        (&Value::Bool(ref v1), &Value::Bool(ref v2)) => Ok(Value::Bool(v1 != v2)),
+        _ => Ok(Value::Bool(true))
+    }
 }
 fn more(args: Vec<Value>) -> Result<Value, String> {
     Ok(Value::Bool(get_num!(args[0]) > get_num!(args[1])))
