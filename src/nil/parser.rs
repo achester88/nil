@@ -192,7 +192,7 @@ fn parse_primary_expr(
     if &tokens[0].value == &Delimiter {
         tokens.remove(0);
     }
-    println!("PPE: {:?}", tokens);
+    //println!("PPE: {:?}", tokens);
     let expr = match &tokens[0].value {
         Ident(name) => {
             //Only variable start with Ident
@@ -363,7 +363,7 @@ fn parse_call_expr(
         }
     }
 
-    println!("args: {:?}", args);
+    //println!("args: {:?}", args);
 
     Ok(CallExpr(name, args))
 }
@@ -405,9 +405,9 @@ fn parse_expr(
         Type(type_of) => {
             if let VariableExpr(name) = get_result!(lhs) {
                 match type_of {
-                    TypeOf::Num => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Num(0.0))))),
-                    TypeOf::String => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::String(String::from("")))))),
-                    TypeOf::Bool => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Bool(false))))),
+                    TypeOf::Num => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Num(0.0))), true)),
+                    TypeOf::String => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::String(String::from("")))), true)),
+                    TypeOf::Bool => lhs = Ok(AssignmentExpr(name, Box::new(LiteralExpr(grammar::Value::Bool(false))), true)),
                     }
             } else {
                 return error("Error parsing Variable Init")
@@ -447,7 +447,7 @@ fn parse_binary_expr(
             &Assignment => {
                 tokens.remove(0);
                 let Ident(name) = tokens.remove(0).value else {return Err(Error::at_pt("Expected Variable Name", tokens[0].pos))};
-                return Ok(AssignmentExpr(name, Box::new(result)));
+                return Ok(AssignmentExpr(name, Box::new(result), false));
             },
             
             _ => break,
@@ -476,7 +476,7 @@ fn parse_binary_expr(
                         _ => return error("Varable name is improper")
                     };
                     tokens.remove(0);//removes name
-                    return Ok(AssignmentExpr(name, Box::new(result)));
+                    return Ok(AssignmentExpr(name, Box::new(result), false));
                 }
                 _ => break,
             };

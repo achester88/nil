@@ -29,8 +29,26 @@ impl Scope {
         None
     }
 
+    pub fn set_var_local(&mut self, name: String, val: Value) -> Result<Value, Error> {
+        //println!("set: {:?}", &self.var);
+        let depth = self.var.len()-1;
+        self.var[depth].insert(name, val);
+
+        return Ok(Value::Bool(true))
+    }
+
     pub fn set_var(&mut self, name: String, val: Value) -> Result<Value, Error> {
         //println!("set: {:?}", &self.var);
+        for i in (0..self.var.len()).rev() {
+            match self.var[i].get(&name) {
+                Some(_) => {
+                    self.var[i].insert(name, val);
+                    return Ok(Value::Bool(true));
+                },
+                None => {}
+            }
+        }
+
         let depth = self.var.len()-1;
         self.var[depth].insert(name, val);
 

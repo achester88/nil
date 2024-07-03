@@ -51,7 +51,7 @@ pub enum Expression {
     //cond, then, else
     ConditionalExpr{cond_expr: Box<Expression>, then_expr: Box<Vec<ASTNode>>, else_expr: Option<Box<Expression>>},
     LoopExpr{cond_expr: Box<Expression>, then_expr: Box<Vec<ASTNode>>},
-    AssignmentExpr(String, Box<Expression>),
+    AssignmentExpr(String, Box<Expression>, bool),
     CallExpr(String, Vec<Expression>),
     DoExpr(Vec<ASTNode>)
 }

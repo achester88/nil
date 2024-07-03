@@ -44,9 +44,13 @@ fn eval(node: ASTNode, sp: &SpecialForms, scope: &mut Scope) -> Value {
 fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Result<Value, String> {
     match expr {
         LiteralExpr(val) => Ok(val),
-        AssignmentExpr(name, expr) => {
+        AssignmentExpr(name, expr, init) => {
             let set = get_result!(eval_expression(sp, scope, *expr));
-            scope.set_var(name, set);
+            if init {
+                scope.set_var_local(name, set);
+            } else {
+                scope.set_var(name, set);
+            }
             
             Ok(Value::Bool(true))
         },
@@ -62,11 +66,13 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
             Ok(run(sp, scope, op, vec!(lhs, rhs)))
         },
         ConditionalExpr { cond_expr: cond, then_expr: then, else_expr: else_ep } => {
-            if !(get_bool!(get_result!(eval_expression(sp, scope, *cond)))) {//not if 
+            if !(get_bool!(get_result!(eval_expression(sp, scope, *cond)))) {//not if
+                let mut ret = Value::Bool(false);
+
                 for node in *then {
-                    eval(node, sp, scope);
+                    ret = eval(node, sp, scope);
                 }
-                Ok(Value::Bool(true))
+                Ok(ret)
             } else {
                 // if else eval_expression
                 match else_ep {
@@ -77,13 +83,15 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
             
         },
         LoopExpr { cond_expr: cond, then_expr: then} => {
-            while !get_bool!(get_result!(eval_expression(sp, scope, *cond.clone()))) {//rewirte as ref
+            let mut ret = Value::Bool(false);
+
+            while !get_bool!(get_result!(eval_expression(sp, scope, *cond.clone()))) {//rewirte as ref 
                 for node in &*then {
-                    eval(node.clone(), sp, scope); //find better sloution
+                    ret = eval(node.clone(), sp, scope); //find better sloution
                 }
             }
             
-            Ok(Value::Bool(true))
+            Ok(ret)
         },
         CallExpr(name, args) => {
             let mut args_vals: Vec<Value> = vec![];
@@ -108,7 +116,7 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
 }
 
 fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) -> Value {
-    println!("run name: {}, args: {:?}", fn_name, args);
+    //println!("run name: {}, args: {:?}", fn_name, args);
 
     match sp.map.get(&fn_name) {
         Some(fun) => {
@@ -123,6 +131,7 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
                     let fun_copy = fun.clone();//find better sloution
                     //extend scope
                     scope.create_depth();
+                    //println!("-----S{:?}S-----", scope.var.len());
 
                     for i in 0..args.len() { //check args count matches
                         scope.set_var_local(fun_copy.prototype.args[i].to_string(), args[i].clone());
@@ -137,6 +146,7 @@ fn run(sp: &SpecialForms, scope: &mut Scope, fn_name: String, args: Vec<Value>) 
                         scope
                     );
                     scope.remove_depth();
+                    //println!("-----E{:?}E-----", scope.var.len());
                     return res;
                 },
                 None => error(format!("Undefined Function: {}", fn_name))

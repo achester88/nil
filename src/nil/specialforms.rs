@@ -136,6 +136,15 @@ fn output(args: Vec<Value>) -> Result<Value, String> {
 
 fn str_input(args: Vec<Value>) -> Result<Value, String> {
     let mut input = String::new();
+
+    match args.first() {
+        Some(Value::String(val)) => {
+            print!("{}", val);
+            io::stdout().flush().unwrap();
+        },
+        _ => {}
+    }
+
     std::io::stdin().read_line(&mut input).unwrap();
 
     Ok(Value::String(input.replace("\n","")))

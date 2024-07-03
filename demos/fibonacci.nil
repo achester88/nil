@@ -1,17 +1,17 @@
-Hello World A Function Call and Returns
+Uses User Input to Calculate Fibonacci Sequence
 
 /*
 
 ;
 ;{output} ,Value:, res
-;{sq} val = res
+;{fib} val = res
 ;{num_input} ,Enter Number: , = val
 
-) {x} sq
+) {x} fib
 )
   ;n1 + n2
-  ;{sq} (x-1) = n2
-  ;{sq} (x-2) = n1
+  ;{fib} (x-1) = n2
+  ;{fib} (x-2) = n1
   ;n2 num
   ;n1 num
 ) else nif x < 2 (
