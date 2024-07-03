@@ -94,12 +94,37 @@ fn parse_function(
     settings: &mut ParserSettings,
 ) -> Result<ASTNode, Error> {
     tokens.remove(0); //Removes Def
-    let body = parse_expr(tokens, settings, &Vec::new());
+    
+    let mut raw_body = vec![];
+    let mut pars = 1;
+    let line = tokens[0].pos;
+
+    tokens.remove(0); //removes '('
+
+    loop {
+        if tokens.len() == 0 {
+            return Err(Error::at("Expected ')' nil statment starting", line)) //fix
+        }
+
+        match tokens[0].value {
+            OpeningPars => pars += 1,
+            ClosingPars => pars -= 1,
+            _ => {}
+        }
+        if pars == 0 {
+            break
+        } else {
+            raw_body.push(tokens.remove(0))
+        }
+    }
+    tokens.remove(0);
+
+    let body = DoExpr(get_result!(parser(&mut raw_body, settings)));
     let prototype = parse_prototype(tokens, settings);
 
     Ok(FunctionNode(Function {
         prototype: get_result!(prototype),
-        body: get_result!(body),
+        body: body,
     }))
 }
 

@@ -95,6 +95,14 @@ fn eval_expression(sp: &SpecialForms, scope: &mut Scope, expr: Expression) -> Re
             }
 
             Ok(run(sp, scope, name, args_vals))
+        },
+        DoExpr(list) => {
+            let mut ret = Value::Bool(false);
+            for node in list {
+                ret = eval(node.clone(), sp, scope);
+            }
+
+            Ok(ret)
         }
     }
 }

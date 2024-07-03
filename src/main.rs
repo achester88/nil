@@ -8,7 +8,7 @@ use crate::nil::evaluate;
 use parser::ParserSettings;
 use crate::nil::errorhandler;
 
-const USAGE: &'static str = "USEAGE:\n nil <path> [(-l | -p | -i)]
+const USAGE: &'static str = "USEAGE:\n nil <path> [(-l | -p)]
 
 Options:
     -l Display Lexer Output

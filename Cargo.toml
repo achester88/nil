@@ -1,5 +1,5 @@
 [package]
-name = "NIL"
+name = "nil"
 version = "0.0.1"
 edition = "2021"
 authors = ["Anthony Chester <anthonychester71@gmail.com>"]

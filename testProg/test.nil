@@ -1,6 +1,10 @@
 Basic Hello World
 
 /*
-;{output} ,hello,
-;1 = val
+;{output} {hello}
+
+) {x} hello
+  ;,World,
+  ;{output} ,Hello,
+def (
 */
