@@ -21,9 +21,9 @@ fn main() {
     let mut lexer_log = false;
     let mut parser_log = false;
 
-    /*panic::set_hook(Box::new(|_info| {
+    panic::set_hook(Box::new(|_info| {
         // do nothing
-    }));*/
+    }));
 
     match args.len() {
         1 => {
