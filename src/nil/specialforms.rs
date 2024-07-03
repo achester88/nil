@@ -48,6 +48,7 @@ impl SpecialForms {
         temp.insert(String::from("output"), output);
         temp.insert(String::from("num_input"), num_input);
         temp.insert(String::from("str_input"), str_input);
+        temp.insert(String::from("round"), round);
 
         SpecialForms {map: temp}
     }
@@ -177,4 +178,8 @@ fn num_input(args: Vec<Value>) -> Result<Value, String> {
         Ok(num) => Ok(Value::Num(num)),
         Err(_) => Err(String::from("Unable to convert input to Number"))
     }
+}
+
+fn round(args: Vec<Value>) -> Result<Value, String> {
+    Ok(Value::Num(get_num!(args[0]).round()))
 }

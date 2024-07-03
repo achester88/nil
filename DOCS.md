@@ -50,7 +50,7 @@ Seeing as almost every programming languages uses some form of the famous ```if 
     stantments...
 ) else nif !cond (
     stantments...
-nif cond (
+;nif cond (
 ```
 
 this is the equivalent of the following js segment: 
@@ -72,8 +72,6 @@ To add to the 100% original innovations the NIL language as created are not loop
     stantments...
 ;noop cond (
 ```
-
-* note that as I don't want noops becoming more popular then nifs they require semicolons in front to make them less lovable
 
 equivalent js code:
 
@@ -119,9 +117,12 @@ def (
 
 ### Built-In Functions
 
-| Name   | Args | Return | Desc.                                   |
-|:------:|:----:|:------:|:---------------------------------------:|
-| output | ANY  | True   | Output any value passed to the terminal |
+| Name      | Args | Return | Desc.                                   |
+|:---------:|:----:|:------:|:---------------------------------------:|
+| output    | ANY  | TRUE   | Output any value passed to the terminal |
+| num_input | STR  | NUM    | Gets users input with optional prompt   |
+| str_input | STR  | STR    | Gets users number with optional prompt  |
+| round     | NUM  | NUM    | round passed number                     |
 
 ### Number Operations
 

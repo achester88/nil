@@ -17,6 +17,15 @@ macro_rules! get_result {
     };
 }
 
+macro_rules! next {
+    ($toks:expr) => {
+        match $toks.first() {
+            Some(tk) => tk,
+            None => Err(Error::mes("Unexpected End Of Input"))
+        }
+    } 
+}
+
 pub struct ParserSettings {
     operator_precednece: HashMap<String, i32>,
 }
@@ -205,7 +214,7 @@ fn parse_primary_expr(
         NWhile => parse_loop_expr(tokens, settings),
         OpeningBrac => parse_call_expr(tokens, settings),
         OpeningPars => parse_parenthesis_expr(tokens, settings),
-        _ => error(format!("error parsing primary expr with token: {:?}", tokens[0]).as_str()),
+        _ => Err(Error::at_pt("Error Parsing Stantment", tokens[0].pos))
     };
 
     Ok(get_result!(expr))
