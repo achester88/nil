@@ -1,10 +1,12 @@
-Basic Hello World
+Hello World A Function Call and Returns
 
 /*
-;{output} {hello}
 
-) {x} hello
+;{output} {hello_world} ,Hello,
+
+) {x} hello_world
   ;,World,
-  ;{output} ,Hello,
+  ;{output} x
 def (
+
 */
